@@ -335,7 +335,10 @@ $("voiceBtn").addEventListener("click", () => {
   utterance.onend = stopSpeaking;
   utterance.onerror = stopSpeaking;
 
-  speechSynthesis.speak(utterance);
+  
+presenter.classList.add("speaking");
+speechSynthesis.speak(utterance);
+  
 });
     
     window.addEventListener("storage",e=>{if(KEYS.includes(e.key)){if(state.mode!=="demo")sync();}});
