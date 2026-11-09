@@ -45,6 +45,27 @@
 }
     
     
+/* V6 STUDIO TV - Bocca animata */
+#presenterArt.speaking #presenterSmile {
+  opacity: 0;
+}
+
+#presenterArt.speaking #speakingMouth {
+  opacity: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: talkMouth 0.22s ease-in-out infinite alternate;
+}
+
+@keyframes talkMouth {
+  from {
+    transform: scaleY(0.35);
+  }
+  to {
+    transform: scaleY(1.3);
+  }
+}
+    
     @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;scroll-behavior:auto!important}}
   </style>
 </head>
@@ -84,7 +105,10 @@
           <path d="M82 103 Q97 95 110 102 M134 102 Q148 96 161 104" fill="none" stroke="#49352e" stroke-width="5" stroke-linecap="round"/>
           <ellipse cx="99" cy="119" rx="5" ry="6" fill="#1d3038"/><ellipse cx="146" cy="119" rx="5" ry="6" fill="#1d3038"/>
           <path d="M120 120 L114 145 Q121 150 130 143" fill="none" stroke="#b57a61" stroke-width="3"/>
-          <path d="M102 162 Q121 177 145 157" fill="none" stroke="#843c3a" stroke-width="3" stroke-linecap="round"/>
+          
+<path id="presenterSmile" d="M102 162 Q121 177 145 157" fill="none" stroke="#843c3a" stroke-width="3" stroke-linecap="round"/>
+<ellipse id="speakingMouth" cx="123" cy="165" rx="13" ry="7" fill="#713638" opacity="0"/>
+          
           <path d="M49 218 Q34 236 40 283 L47 324 Q62 333 70 316 L76 256" fill="url(#jacketGradient)" stroke="#0c1e40" stroke-width="5"/>
           <path d="M44 318 Q40 336 53 345 Q69 352 76 328 L70 315Z" fill="url(#skinGradient)"/>
           <g class="pointing"><path d="M185 205 Q203 214 214 239 L217 256 Q204 266 193 258 L169 231Z" fill="url(#jacketGradient)" stroke="#0c1e40" stroke-width="5"/><path d="M203 253 Q216 258 226 248 L234 245 Q247 245 241 253 L226 264 Q228 279 215 286 Q202 287 199 266Z" fill="url(#skinGradient)"/><path d="M224 249 L244 239" stroke="#cf8968" stroke-width="7" stroke-linecap="round"/></g>
@@ -272,7 +296,48 @@ for (let i = 0; i < picks.length;) {
     $("syncBtn").addEventListener("click",()=>{sync();});
     $("clearBtn").addEventListener("click",()=>{try{localStorage.removeItem(IMPORT_KEY);}catch{}state.mode="empty";state.feeds=[];renderAll();});
     $("fileInput").addEventListener("change",async(e)=>{const file=e.target.files?.[0];if(!file)return;try{if(file.size>2000000)throw Error("File troppo grande (max 2 MB)");const parsed=JSON.parse(await file.text());const feed=normalizeFeed(parsed,"IMPORTAZIONE MANUALE");if(!feed||!feed.matches.length)throw Error("Formato JSON non valido o nessuna partita riconosciuta");writeStorage(IMPORT_KEY,parsed);state.mode="live";state.feeds=[feed];renderAll();}catch(err){alert("Importazione fallita: "+err.message);}finally{e.target.value="";}});
-    $("voiceBtn").addEventListener("click",()=>{if(!("speechSynthesis" in window)){alert("Il browser non supporta la lettura vocale.");return;}speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance($("presenterSpeech").textContent.replace(/^🎙️\s*/,""));utterance.lang="it-IT";utterance.rate=.94;speechSynthesis.speak(utterance);});
+    
+let activeSpeech = null;
+
+$("voiceBtn").addEventListener("click", () => {
+  if (!("speechSynthesis" in window)) {
+    alert("Il browser non supporta la lettura vocale.");
+    return;
+  }
+
+  const presenter = $("presenterArt");
+
+  speechSynthesis.cancel();
+  presenter.classList.remove("speaking");
+
+  const utterance = new SpeechSynthesisUtterance(
+    $("presenterSpeech").textContent.replace(/^🎙️\s*/, "")
+  );
+
+  utterance.lang = "it-IT";
+  utterance.rate = 0.94;
+
+  activeSpeech = utterance;
+
+  utterance.onstart = () => {
+    if (activeSpeech === utterance) {
+      presenter.classList.add("speaking");
+    }
+  };
+
+  const stopSpeaking = () => {
+    if (activeSpeech === utterance) {
+      presenter.classList.remove("speaking");
+      activeSpeech = null;
+    }
+  };
+
+  utterance.onend = stopSpeaking;
+  utterance.onerror = stopSpeaking;
+
+  speechSynthesis.speak(utterance);
+});
+    
     window.addEventListener("storage",e=>{if(KEYS.includes(e.key)){if(state.mode!=="demo")sync();}});
     renderControls();sync();
   })();
