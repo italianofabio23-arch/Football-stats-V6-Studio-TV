@@ -373,13 +373,43 @@ function showBroadcastPick() {
     picks: [pick]
   });
 
+  
+  // Commento Expert V6 Studio TV
+  const tipoMercato = {
+    goals: "gol",
+    combo: "combinazioni",
+    corners: "corner",
+    cards: "cartellini",
+    bookings: "possibili ammonizioni"
+  }[market.category] || "pronostici";
+
+  const profilo = {
+    careful: "prudente",
+    balanced: "equilibrato",
+    bold: "alta quota"
+  }[state.risk] || "equilibrato";
+
+  const storico = Number.isFinite(market.sampleSize)
+    ? `Il campione del modello comprende ${Math.round(market.sampleSize)} partite. `
+    : "";
+
+  const demo = state.mode === "demo"
+    ? "Attenzione: questa è una simulazione. "
+    : "";
+
   $("presenterSpeech").textContent =
-    `🎙️ Partita ${broadcastIndex + 1} di ${broadcastPicks.length}. ` +
+    `🎙️ ${demo}Partita ${broadcastIndex + 1} di ${broadcastPicks.length}. ` +
     `${match.home} contro ${match.away}. ` +
+    `Analizziamo il mercato ${tipoMercato}. ` +
     `Il pronostico selezionato è ${market.label}. ` +
-    `Probabilità stimata ${Math.round(market.probability)} per cento. ` +
-    `Confidence ${Math.round(market.confidence)} per cento. ` +
-    `Attenzione: sono stime statistiche, non garanzie.`;
+    `Probabilità stimata ${Math.round(market.probability)} per cento, ` +
+    `con Confidence ${Math.round(market.confidence)} per cento. ` +
+    `${storico}` +
+    `Questa proposta ha superato i filtri del profilo ${profilo} ` +
+    `e ha ottenuto il punteggio migliore per questo incontro. ` +
+    `Ricordiamo che le percentuali non garantiscono il risultato ` +
+    `e senza una quota bookmaker non possiamo valutare il valore della giocata.`;
+  
 
   $("broadcastStartBtn").disabled = true;
   $("broadcastNextBtn").disabled =
