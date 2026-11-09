@@ -170,7 +170,41 @@
       ["Rocca Olimpica","Nuova Fenice","V6 CORNER & CARDS",[["corners","cornerHome","Casa Over 4.5 corner",67,77,9],["bookings","all","Possibile ammonito: Mario Fittizio",55,70,8]]],
       ["Atletico Bosco","Luna FC","V6 PRO",[["combo","ggover25","GG + Over 2.5",58,72,8],["goals","over15","Over 1.5 gol",84,84,8]]]
     ];return {generatedAt:new Date().toISOString(),matches:teams.map(([home,away,source,markets])=>({home,away,date,league:"CAMPIONATO DIMOSTRATIVO",markets:markets.map(([category,key,label,probability,confidence,sampleSize])=>({category,key,label,probability,confidence,sampleSize,aiScore:Math.round((probability+confidence)/2),source,flags:[]}))}))};}
-    function checkMarket(m,profile){if(m.probability<profile.minProb||m.probability>profile.maxProb)return "probability";if(!Number.isFinite(m.confidence)||m.confidence<profile.minConfidence)return "confidence";if(!Number.isFinite(m.sampleSize)||m.sampleSize<6)return "sample";if(m.flags.some(x=>["rotation-high","data-poor","postponed","high-uncertainty","unreliable"].includes(x)))return "risk";return null;}
+    
+function checkMarket(m, profile) {
+  const line = Number(
+    String(m.label).match(/Over\s+(\d+(?:\.\d+)?)/i)?.[1]
+  );
+
+  if (m.category === "cards" && Number.isFinite(line)) {
+    const minLine = m.key === "cardsTotal" ? 2.5 : 1.5;
+
+    if (line < minLine) return "probability";
+  }
+
+  if (
+    m.probability < profile.minProb ||
+    m.probability > profile.maxProb
+  ) return "probability";
+
+  if (
+    !Number.isFinite(m.confidence) ||
+    m.confidence < profile.minConfidence
+  ) return "confidence";
+
+  if (
+    !Number.isFinite(m.sampleSize) ||
+    m.sampleSize < 6
+  ) return "sample";
+
+  if (m.flags.some(x =>
+    ["rotation-high", "data-poor", "postponed",
+     "high-uncertainty", "unreliable"].includes(x)
+  )) return "risk";
+
+  return null;
+}
+    
     function calculate(){const feedMatches=state.feeds.flatMap(f=>f.matches);const profile=RISK_PROFILES[state.risk];let examined=0,rejected=0;const picks=[];const reasonCount={sample:0,confidence:0,probability:0,risk:0};for(const match of feedMatches){if(match.date!==state.date)continue;
       const options=[];for(const m of match.markets){if(state.category!=="all"&&m.category!==state.category)continue;if(state.market!=="all"&&m.key!==state.market)continue;examined++;const reason=checkMarket(m,profile);if(reason){rejected++;reasonCount[reason]++;continue;}options.push({match,market:m,score:0.65*m.probability+0.25*m.confidence+0.1*Math.min(100,m.aiScore)});}
       if(options.length){options.sort((a,b)=>b.score-a.score);picks.push(options[0]);}
