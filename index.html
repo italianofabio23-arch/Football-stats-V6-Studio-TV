@@ -176,6 +176,28 @@
       if(options.length){options.sort((a,b)=>b.score-a.score);picks.push(options[0]);}
     }
     picks.sort((a,b)=>state.risk==="bold"?b.score-a.score:b.score-a.score);
+     
+const seenMatches = new Set();
+
+for (let i = 0; i < picks.length;) {
+  const match = picks[i].match;
+
+  const key = [
+    match.date,
+    match.home,
+    match.away
+  ].map(value =>
+    String(value || "").trim().toLowerCase()
+  ).join("|");
+
+  if (seenMatches.has(key)) {
+    picks.splice(i, 1);
+  } else {
+    seenMatches.add(key);
+    i++;
+  }
+}
+                         
     return {picks:picks.slice(0,state.count),eligible:picks.length,examined,rejected,reasonCount};}
     function renderBoard(result){const shown=result.picks;$("screenDate").textContent=humanDate(state.date).toUpperCase();$("boardMode").textContent=state.risk==="bold"?"RISCHIO ALTO":state.category==="all"?"TUTTI I MERCATI":CATEGORIES.find(x=>x[0]===state.category)?.[1]||"ANALISI";const el=$("screenPicks");
       if(!shown.length){el.innerHTML='<div class="empty-screen"><div class="empty-symbol">📡</div><strong>Nessuna proposta disponibile</strong><p>'+(state.mode==="empty"?"Sincronizza le V6 o prova la demo per visualizzare il bollettino.":"Per questa data e questi filtri non ci sono mercati abbastanza affidabili.")+'</p></div>';}
