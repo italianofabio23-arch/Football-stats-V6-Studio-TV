@@ -128,6 +128,23 @@
 
     <div class="speech"><p id="presenterSpeech">🎙️ Benvenuti a V6 Studio TV. Scegliete data, mercato e livello di rischio. Le proposte compariranno quando sarà disponibile un feed V6.</p><button type="button" class="voice-btn" id="voiceBtn">🔊 Leggi il bollettino</button></div>
 
+<!-- V6 STUDIO TV - Regia della diretta -->
+<div class="action-buttons" id="tvBroadcastControls"
+     style="margin:-4px 0 18px">
+  <button type="button" class="action primary"
+          id="broadcastStartBtn">
+    🎬 Avvia diretta
+  </button>
+  <button type="button" class="action"
+          id="broadcastNextBtn" disabled>
+    ⏭ Prossima partita
+  </button>
+  <button type="button" class="action"
+          id="broadcastStopBtn" disabled>
+    ⏹ Termina
+  </button>
+</div>
+    
     <div class="workspace">
       <section class="card" aria-label="Regia tattile">
         <h3>🎛️ <span>REGIA</span> TOUCH</h3>
@@ -339,6 +356,75 @@ $("voiceBtn").addEventListener("click", () => {
 presenter.classList.add("speaking");
 speechSynthesis.speak(utterance);
   
+});
+    
+/* V6 STUDIO TV - Diretta partita per partita */
+let broadcastPicks = [];
+let broadcastIndex = 0;
+
+function showBroadcastPick() {
+  const pick = broadcastPicks[broadcastIndex];
+  if (!pick) return;
+
+  const { match, market } = pick;
+
+  renderBoard({
+    ...calculate(),
+    picks: [pick]
+  });
+
+  $("presenterSpeech").textContent =
+    `🎙️ Partita ${broadcastIndex + 1} di ${broadcastPicks.length}. ` +
+    `${match.home} contro ${match.away}. ` +
+    `Il pronostico selezionato è ${market.label}. ` +
+    `Probabilità stimata ${Math.round(market.probability)} per cento. ` +
+    `Confidence ${Math.round(market.confidence)} per cento. ` +
+    `Attenzione: sono stime statistiche, non garanzie.`;
+
+  $("broadcastStartBtn").disabled = true;
+  $("broadcastNextBtn").disabled =
+    broadcastIndex >= broadcastPicks.length - 1;
+  $("broadcastStopBtn").disabled = false;
+
+  $("voiceBtn").click();
+}
+
+$("broadcastStartBtn").addEventListener("click", () => {
+  const result = calculate();
+
+  if (!result.picks.length) {
+    alert("Nessuna partita supera i filtri selezionati.");
+    return;
+  }
+
+  broadcastPicks = result.picks.slice();
+  broadcastIndex = 0;
+  showBroadcastPick();
+});
+
+$("broadcastNextBtn").addEventListener("click", () => {
+  if (broadcastIndex + 1 >= broadcastPicks.length) return;
+
+  broadcastIndex++;
+  showBroadcastPick();
+});
+
+$("broadcastStopBtn").addEventListener("click", () => {
+  broadcastPicks = [];
+  broadcastIndex = 0;
+
+  if ("speechSynthesis" in window) {
+    speechSynthesis.cancel();
+  }
+
+  activeSpeech = null;
+  $("presenterArt").classList.remove("speaking");
+
+  $("broadcastStartBtn").disabled = false;
+  $("broadcastNextBtn").disabled = true;
+  $("broadcastStopBtn").disabled = true;
+
+  renderAll();
 });
     
     window.addEventListener("storage",e=>{if(KEYS.includes(e.key)){if(state.mode!=="demo")sync();}});
