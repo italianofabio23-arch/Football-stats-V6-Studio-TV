@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#08172c">
+  <meta name="description" content="V6 Studio TV — studio interattivo per visualizzare le analisi V6 Pro e Corner & Cards.">
+  <title>V6 Studio TV · Football Intelligence</title>
+  <style>
+    :root { color-scheme: dark; --bg:#07101e; --panel:#101d31; --panel2:#152842; --line:#2a4362; --ink:#f4f7ff; --muted:#9eb3ca; --sky:#48c6ff; --teal:#5ef3cf; --amber:#ffcb6f; --danger:#ff9c84; --radius:22px; }
+    * {box-sizing:border-box} html {scroll-behavior:smooth} body {margin:0; min-height:100vh; background:radial-gradient(ellipse 76% 50% at 52% -20%,#153c70 0,transparent 65%),linear-gradient(180deg,#081426,#060b15 85%);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink)}
+    body::before {content:"";position:fixed;inset:0;opacity:.12;pointer-events:none;background-image:linear-gradient(#5fa9d8 1px,transparent 1px),linear-gradient(90deg,#5fa9d8 1px,transparent 1px);background-size:64px 64px;mask-image:linear-gradient(to bottom,#000,transparent 78%)}
+    button,input,select {font:inherit} button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
+    .app{position:relative;max-width:1260px;padding:24px 22px 60px;margin:auto}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:21px}.brand{display:flex;align-items:center;gap:13px}.brand-mark{display:grid;place-items:center;width:52px;height:52px;border:1px solid #59c8fd;border-radius:15px;background:linear-gradient(130deg,#0a61a2,#07274b);box-shadow:inset 0 0 16px #3dd7ff45,0 0 25px #1761ad44;font-size:27px}.eyebrow{font-size:11px;font-weight:800;letter-spacing:2.1px;color:var(--sky)}.brand h1{font-size:clamp(24px,3.8vw,39px);line-height:1.04;letter-spacing:-1px;margin:5px 0 0;font-weight:900}.brand h1 span{color:var(--sky)}.brand-small{font-size:12px;color:var(--muted);margin-top:5px}
+    .top-status{display:flex;align-items:center;gap:7px;border:1px solid #35577b;border-radius:50px;padding:9px 13px;background:#142640;font-weight:700;font-size:11px;letter-spacing:1px;color:#d6eeff;white-space:nowrap}.pulse{width:8px;height:8px;background:#ff9b6a;border-radius:50%;box-shadow:0 0 0 5px #ff9b6a25;animation:blink 2.3s infinite}@keyframes blink{50%{opacity:.42}}
+    .stage{position:relative;overflow:hidden;min-height:400px;display:grid;grid-template-columns:31% 1fr;gap:5px;padding:20px 22px 22px;border-radius:28px;border:1px solid #2c648f;box-shadow:0 23px 80px #0008,inset 0 0 30px #2870c521;background:radial-gradient(ellipse at 40% -20%,#226db5,#0e2951 53%,#071831 100%)}
+    .stage:before{content:"";position:absolute;left:0;right:0;top:14px;height:7px;background:linear-gradient(90deg,transparent,#48ceff,#c2f5ff,#48ceff,transparent);box-shadow:0 0 20px #26cfff,0 5px 35px #2a90fcbb;opacity:.83}.stage:after{content:"";position:absolute;bottom:0;left:0;right:0;height:63px;background:linear-gradient(0deg,#071224,#102c5065);border-top:1px solid #5db6f538;pointer-events:none}
+    .presenter-side{position:relative;display:flex;justify-content:center;align-items:flex-end;min-height:335px;z-index:1}.presenter-art{height:355px;width:min(100%,256px);filter:drop-shadow(0 12px 22px #0007);transform-origin:center bottom;animation:sway 4s ease-in-out infinite}.presenter-art .pointing{transform-origin:157px 240px;animation:gesture 3.8s ease-in-out infinite}.presenter-art.player .jacket{fill:#1478aa}.presenter-art.player .lapel{fill:#83d7e9}.presenter-art.player .tie{fill:#edf8ff}@keyframes sway{50%{transform:rotate(.75deg)}}@keyframes gesture{50%{transform:rotate(-5deg)}}
+    .host-tag{position:absolute;bottom:6px;left:0;z-index:4;max-width:100%;padding:8px 10px 8px 12px;background:#07192be3;border:1px solid #489dda77;border-radius:12px;box-shadow:0 6px 18px #061020a0}.host-tag strong{font-size:13px}.host-tag span{display:block;color:#b2cae1;font-size:10px;letter-spacing:1px;margin-top:2px}
+    .screen-wrap{z-index:3;align-self:stretch;display:flex;flex-direction:column;min-width:0}.screen-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:15px 0 11px}.screen-header h2{font-size:clamp(14px,2.4vw,20px);letter-spacing:.35px;margin:0}.screen-header small{color:var(--teal);font-size:11px;font-weight:800;letter-spacing:.8px}.tv-screen{position:relative;flex:1;min-height:280px;border:3px solid #3d759e;background:linear-gradient(142deg,#0a203e,#102d55 65%,#081b33);box-shadow:inset 0 0 34px #2093e323,0 0 0 6px #08152c50;overflow:hidden;border-radius:12px;padding:14px}.tv-screen::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.13;background:repeating-linear-gradient(0deg,#fff0 0px,#fff0 4px,#9bcfff 5px)}.screen-date{font-size:12px;color:#a7d8fb;letter-spacing:1px;margin-bottom:11px}.screen-picks{display:flex;flex-direction:column;gap:8px}.screen-pick{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 11px;background:linear-gradient(105deg,#1a3c62c7,#102642b5);border-left:3px solid var(--sky);border-radius:6px}.screen-pick strong{font-size:13px;line-height:1.3;display:block}.screen-pick small{display:block;font-size:11px;color:#c3d6e8;margin-top:3px}.screen-pick .pct{font-weight:900;color:var(--teal);font-size:24px;letter-spacing:-.8px}.screen-pick .pct small{font-size:9px;text-align:right;letter-spacing:.5px;color:#bbdbeb;margin:0}.empty-screen{padding:24px 12px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;min-height:195px;color:#d5e6fb}.empty-screen .empty-symbol{font-size:32px;margin-bottom:8px}.empty-screen strong{font-size:17px}.empty-screen p{color:#9eb5ca;font-size:13px;max-width:350px;line-height:1.5}.crawl{position:absolute;left:0;right:0;bottom:0;z-index:5;background:#061324ef;display:flex;min-height:34px;border-top:1px solid #40abff66;font-size:11px;letter-spacing:.7px;align-items:center;gap:15px;padding:7px 15px}.crawl .live{color:#061b29;background:var(--sky);font-weight:900;padding:4px 6px;border-radius:3px}.crawl-text{color:#c7e6f9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .speech{margin:15px 0 18px;padding:13px 18px;background:#13233aa8;border:1px solid #264363;border-radius:15px;display:flex;align-items:center;justify-content:space-between;gap:12px}.speech p{margin:0;color:#d7e9f9;font-size:13px;line-height:1.5}.voice-btn{display:inline-flex;align-items:center;gap:5px;border:1px solid #376d9c;background:#1e3656;color:#fff;border-radius:12px;padding:10px 13px;white-space:nowrap;font-size:12px;font-weight:800}.voice-btn:hover{background:#295079}
+    .workspace{display:grid;grid-template-columns:360px 1fr;gap:18px}.card{padding:20px;border:1px solid #2c4361;border-radius:var(--radius);background:linear-gradient(150deg,#112039,#101928);box-shadow:0 14px 36px #0002}.card h3{font-size:15px;letter-spacing:.1px;margin:0 0 13px}.card h3 span{color:var(--sky)}.rule{height:1px;background:#2a425f;margin:17px 0}.field-label{display:block;font-size:11px;letter-spacing:1.2px;font-weight:800;color:#a4b9d0;margin:16px 0 9px}.field-label:first-of-type{margin-top:0}.date-ctrl{width:100%;border:1px solid #45668e;border-radius:12px;padding:12px;background:#0b192a;color:#fff;color-scheme:dark}.segments,.chips{display:flex;gap:7px;flex-wrap:wrap}.choice{background:#192d48;border:1px solid #395675;color:#d1e0f2;border-radius:11px;padding:10px 12px;font-size:12px;font-weight:750;transition:.15s}.choice:hover{border-color:#67ceff}.choice.active{color:#071525;border-color:#70dfff;background:linear-gradient(120deg,#5ee8d9,#72caff);box-shadow:0 0 0 2px #67deff22}.chips .choice{padding:9px 11px}.presenter-select{display:flex;justify-content:space-between;align-items:center;gap:10px}.presenter-select select{background:#0b192b;border:1px solid #3b567b;color:#eff9ff;border-radius:10px;padding:9px;font-size:13px;max-width:192px}
+    .data-card{display:flex;flex-direction:column;gap:12px}.source-status{display:flex;align-items:flex-start;gap:10px;background:#122d46;border:1px solid #2d526d;padding:13px;border-radius:12px}.status-icon{font-size:19px}.source-status strong{font-size:13px}.source-status p{margin:4px 0 0;color:#9db6ca;line-height:1.4;font-size:12px}.action-buttons{display:flex;gap:8px;flex-wrap:wrap}.action{background:#1a3857;color:#e8f5ff;border:1px solid #4c7795;border-radius:11px;padding:11px 13px;font-size:12px;font-weight:800}.action.primary{background:#59d8eb;color:#071a27;border-color:#59d8eb}.action:hover{filter:brightness(1.15)}.import-label{cursor:pointer;display:inline-flex;align-items:center}.tiny-note{margin:0;color:var(--muted);font-size:11px;line-height:1.55}.tiny-note strong{color:#e1f0ff}
+    .bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.stat-card{padding:18px;background:#0e1a2c;border:1px solid #2a405d;border-radius:16px}.stat-card strong{display:block;color:#fff;font-size:15px;margin:0 0 6px}.stat-card p{color:#9cb3ce;font-size:12px;line-height:1.5;margin:0}.codeish{font-family:ui-monospace,monospace;color:#94dff7;font-size:11px}.note-banner{border:1px solid #756440;background:#31281755;color:#ffdeb0;padding:12px;border-radius:12px;font-size:12px;line-height:1.5;margin-top:14px}.summary-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.metric{background:#102843;border:1px solid #2e5673;border-radius:11px;padding:11px}.metric span{display:block;color:#acc6de;font-size:11px}.metric strong{display:block;font-size:21px;margin-top:5px}.reasons{padding:0;margin:14px 0 0 18px;color:#c5d7e9;font-size:12px;line-height:1.6}.market-info{font-size:12px;color:#abc3d8;margin:9px 0 4px}.feed-badge{display:inline-block;background:#43321f;color:#ffe0ad;padding:5px 8px;border:1px solid #a28146;border-radius:8px;font-weight:900;font-size:10px;margin-left:8px;vertical-align:middle}.feed-badge.real{background:#143e39;color:#90f3dc;border-color:#438a78}.footer{padding-top:22px;color:#8198b0;font-size:11px;line-height:1.5;text-align:center}
+    @media (max-width:900px){.workspace{grid-template-columns:1fr 1fr}.stage{grid-template-columns:30% 1fr}.presenter-art{height:315px}.presenter-side{min-height:290px}.bottom-grid{grid-template-columns:1fr}}
+    @media (max-width:700px){.app{padding:17px 13px 35px}.topbar{align-items:flex-start}.brand-mark{height:45px;width:45px;font-size:23px}.brand h1{font-size:26px}.brand-small{font-size:10px}.top-status{font-size:9px;padding:7px}.stage{padding:14px 10px 38px;min-height:338px;grid-template-columns:32% minmax(0,1fr);gap:5px;border-radius:20px}.presenter-side{min-height:250px}.presenter-art{height:260px;width:155px;max-width:none;transform:translateX(-7px)}.host-tag{left:0;bottom:2px;padding:6px 7px}.host-tag strong{font-size:9px}.host-tag span{font-size:8px}.screen-header{margin:12px 0 7px}.screen-header h2{font-size:12px}.screen-header small{font-size:9px}.tv-screen{padding:7px 6px;min-height:248px;border-width:2px}.screen-date{font-size:9px;margin-bottom:6px}.screen-picks{gap:5px}.screen-pick{gap:3px;padding:7px 6px}.screen-pick strong{font-size:10px}.screen-pick small{font-size:9px}.screen-pick .pct{font-size:16px}.screen-pick .pct small{font-size:7px}.empty-screen{padding:12px 3px;min-height:195px}.empty-screen strong{font-size:12px}.empty-screen p{font-size:10px}.crawl{font-size:9px;min-height:28px;padding:5px 9px;gap:8px}.speech{flex-direction:column;align-items:stretch;padding:12px}.voice-btn{justify-content:center}.workspace{grid-template-columns:1fr}.card{padding:17px}.summary-cards{grid-template-columns:repeat(3,minmax(0,1fr))}.metric{padding:9px}.metric strong{font-size:17px}}
+    @media (max-width:370px){.presenter-art{height:240px;transform:translateX(-14px)}.stage{grid-template-columns:29% 1fr}.brand h1{font-size:23px}.top-status{font-size:8px}.choice{padding:9px 10px;font-size:11px}}
+    @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">⚽</div>
+        <div>
+          <div class="eyebrow">FOOTBALL INTELLIGENCE · DIGITAL STUDIO</div>
+          <h1>V6 <span>STUDIO TV</span></h1>
+          <div class="brand-small">Powered by V6 Expert Pro + Corner & Cards</div>
+        </div>
+      </div>
+      <div class="top-status"><span class="pulse"></span><span id="topBadge">IN ATTESA DATI</span></div>
+    </header>
+
+    <section class="stage" aria-label="Studio televisivo virtuale">
+      <div class="presenter-side">
+        <svg class="presenter-art" id="presenterArt" viewBox="0 0 250 410" role="img" aria-label="Presentatore cartoon originale in giacca blu">
+          <defs>
+            <linearGradient id="jacketGradient" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#256aa6"/><stop offset="1" stop-color="#0b2856"/></linearGradient>
+            <linearGradient id="skinGradient" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7c69d"/><stop offset="1" stop-color="#d58863"/></linearGradient>
+          </defs>
+          <ellipse cx="122" cy="399" rx="90" ry="9" fill="#031028" opacity=".6"/>
+          <path d="M87 302 L73 394 H116 L130 310" fill="#112b50" stroke="#0a1835" stroke-width="4"/>
+          <path d="M127 307 L142 394 H184 L161 298" fill="#122e57" stroke="#0a1835" stroke-width="4"/>
+          <path class="jacket" d="M61 198 Q87 177 103 183 L144 181 Q173 175 194 208 L203 354 L49 354 L48 226 Q49 208 61 198Z" fill="url(#jacketGradient)" stroke="#0c1e40" stroke-width="5"/>
+          <path d="M95 187 L117 308 L140 187 L148 191 L137 331 L99 331 L83 191Z" fill="#edf5fa"/>
+          <path class="lapel" d="M96 185 L117 306 L94 273 L74 211Z" fill="#0b3d71" stroke="#a2d9fd" stroke-width="2"/>
+          <path class="lapel" d="M143 184 L117 306 L158 258 L168 197Z" fill="#0a3667" stroke="#a2d9fd" stroke-width="2"/>
+          <path class="tie" d="M117 195 L130 199 L124 218 L134 271 L119 291 L110 272 L116 218 L107 200Z" fill="#7de4ed"/>
+          <rect x="108" y="161" width="35" height="36" rx="12" fill="url(#skinGradient)"/>
+          <ellipse cx="121" cy="113" rx="58" ry="71" fill="url(#skinGradient)" stroke="#b16e56" stroke-width="2"/>
+          <ellipse cx="66" cy="119" rx="10" ry="16" fill="#dda07b"/><ellipse cx="177" cy="119" rx="10" ry="16" fill="#dda07b"/>
+          <path d="M62 91 Q44 62 68 37 Q103 3 153 29 Q197 47 181 98 Q168 84 161 60 Q129 77 100 68 Q81 87 62 91Z" fill="#1c293b"/>
+          <path d="M82 103 Q97 95 110 102 M134 102 Q148 96 161 104" fill="none" stroke="#49352e" stroke-width="5" stroke-linecap="round"/>
+          <ellipse cx="99" cy="119" rx="5" ry="6" fill="#1d3038"/><ellipse cx="146" cy="119" rx="5" ry="6" fill="#1d3038"/>
+          <path d="M120 120 L114 145 Q121 150 130 143" fill="none" stroke="#b57a61" stroke-width="3"/>
+          <path d="M102 162 Q121 177 145 157" fill="none" stroke="#843c3a" stroke-width="3" stroke-linecap="round"/>
+          <path d="M49 218 Q34 236 40 283 L47 324 Q62 333 70 316 L76 256" fill="url(#jacketGradient)" stroke="#0c1e40" stroke-width="5"/>
+          <path d="M44 318 Q40 336 53 345 Q69 352 76 328 L70 315Z" fill="url(#skinGradient)"/>
+          <g class="pointing"><path d="M185 205 Q203 214 214 239 L217 256 Q204 266 193 258 L169 231Z" fill="url(#jacketGradient)" stroke="#0c1e40" stroke-width="5"/><path d="M203 253 Q216 258 226 248 L234 245 Q247 245 241 253 L226 264 Q228 279 215 286 Q202 287 199 266Z" fill="url(#skinGradient)"/><path d="M224 249 L244 239" stroke="#cf8968" stroke-width="7" stroke-linecap="round"/></g>
+          <path d="M152 242 L176 240 L174 251 L155 255Z" fill="#f3f8ff" opacity=".75"/>
+        </svg>
+        <div class="host-tag"><strong id="presenterName">Mister Pixel</strong><span>AVATAR ORIGINALE · DEMO</span></div>
+      </div>
+      <div class="screen-wrap">
+        <div class="screen-header"><h2>IL TABELLONE V6</h2><small id="boardMode">ANALISI PRONOSTICI</small></div>
+        <div class="tv-screen">
+          <div class="screen-date" id="screenDate">SELEZIONA UNA DATA</div>
+          <div id="screenPicks" class="screen-picks" aria-live="polite"><div class="empty-screen"><div class="empty-symbol">📡</div><strong>Studio in attesa</strong><p>Sincronizza le due V6 oppure carica la demo per vedere il tabellone.</p></div></div>
+        </div>
+      </div>
+      <div class="crawl"><span class="live" id="crawlLabel">STUDIO</span><span class="crawl-text" id="crawlText">ANALISI STATISTICHE · NESSUNA SCOMMESSA È GARANTITA · V6 STUDIO TV</span></div>
+    </section>
+
+    <div class="speech"><p id="presenterSpeech">🎙️ Benvenuti a V6 Studio TV. Scegliete data, mercato e livello di rischio. Le proposte compariranno quando sarà disponibile un feed V6.</p><button type="button" class="voice-btn" id="voiceBtn">🔊 Leggi il bollettino</button></div>
+
+    <div class="workspace">
+      <section class="card" aria-label="Regia tattile">
+        <h3>🎛️ <span>REGIA</span> TOUCH</h3>
+        <label class="field-label" for="dateInput">DATA PARTITE</label>
+        <input class="date-ctrl" type="date" id="dateInput">
+        <label class="field-label">CATEGORIA</label>
+        <div class="chips" id="categoryChoices"></div>
+        <label class="field-label">MERCATO</label>
+        <div class="chips" id="marketChoices"></div>
+        <label class="field-label">PROFILO DI RISCHIO</label>
+        <div class="segments" id="riskChoices"></div>
+        <label class="field-label">NUMERO PARTITE SULLO SCHERMO</label>
+        <div class="segments" id="countChoices"></div>
+        <div class="rule"></div>
+        <div class="presenter-select"><label class="field-label" for="presenterSelect" style="margin:0">PRESENTATORE</label><select id="presenterSelect"><option value="coach">🧑‍💼 Allenatore cartoon</option><option value="player">⚽ Calciatore cartoon</option></select></div>
+      </section>
+      <section class="card data-card" aria-label="Fonti e bollettino">
+        <h3>📡 <span>DATI</span> &amp; ANALISI</h3>
+        <div class="source-status"><div class="status-icon" id="feedIcon">⏳</div><div><strong id="feedTitle">Nessuna fonte sincronizzata</strong><p id="feedDescription">Le app V6 sono indipendenti: per adesso nessun pronostico reale viene trasferito automaticamente.</p></div></div>
+        <div class="action-buttons"><button type="button" class="action primary" id="syncBtn">🔄 Sincronizza V6</button><button type="button" class="action" id="demoBtn">▶ Prova la demo</button><label class="action import-label" for="fileInput">📁 Importa JSON</label><input id="fileInput" type="file" accept=".json,application/json" hidden></div>
+        <p class="tiny-note">La sincronizzazione leggerà soltanto i dati già esportati dalle due V6 nello stesso dominio GitHub Pages. <strong>Nel prossimo passo attiveremo gli esportatori</strong> nelle app esistenti; nessun dato viene inventato.</p>
+        <div class="rule"></div>
+        <h3 style="margin-bottom:0">📊 RIEPILOGO DEL MODELLO</h3>
+        <div class="summary-cards"><div class="metric"><span>Partite valide</span><strong id="validCount">0</strong></div><div class="metric"><span>Sullo schermo</span><strong id="shownCount">0</strong></div><div class="metric"><span>Scartate</span><strong id="rejectedCount">0</strong></div></div>
+        <div class="market-info" id="marketInfo">Scegli un mercato: la regia seleziona massimo una proposta per incontro.</div>
+        <ul class="reasons" id="reasonList"><li>Rifiuta campioni insufficienti e segnali di forte incertezza.</li><li>Non alza artificialmente le percentuali delle V6.</li></ul>
+        <div class="note-banner" id="disclaimer">⚠️ I pronostici saranno stime non verificate. La modalità demo utilizza squadre fittizie e percentuali inventate esclusivamente per testare l'interfaccia.</div>
+        <button class="action" type="button" id="clearBtn">Cancella importazioni locali</button>
+      </section>
+    </div>
+    <div class="bottom-grid"><section class="stat-card"><strong>🔗 Prossimo collegamento: V6 Pro</strong><p>Pubblicheremo le selezioni per gol, GG, Over, 1X2 e combo in un formato comune. Lo Studio leggerà i risultati senza ricalcolarli.</p></section><section class="stat-card"><strong>🚩🟨 Prossimo collegamento: Corner &amp; Cards</strong><p>Esporteremo corner totali, corner squadra, cartellini e candidati ammoniti quando i rispettivi dati sono sufficienti.</p></section></div>
+    <footer class="footer">V6 STUDIO TV · PROTOTIPO V1 · Tutti i presentatori sono originali e non ritraggono persone reali. Le percentuali devono essere valutate su dati storici prima dell'uso decisionale.</footer>
+  </div>
+  <script>
+  "use strict";
+  (() => {
+    const $ = (id) => document.getElementById(id);
+    const KEYS = ["v6_studio_pro_feed_v1", "v6_studio_corner_feed_v1"];
+    const IMPORT_KEY = "v6_studio_imported_feed_v1";
+    const CATEGORIES = [
+      ["all","🎯 Tutti"],["goals","⚽ Gol"],["combo","🔥 Combo"],["corners","🚩 Corner"],["cards","🟨 Cartellini"],["bookings","👤 Ammoniti"]
+    ];
+    const MARKET_OPTIONS = {
+      all:[["all","Tutti i mercati"]],
+      goals:[["all","Tutti i gol"],["over25","Over 2.5"],["gg","GG / Entrambe"],["1x2","1X2"],["over15","Over 1.5"]],
+      combo:[["all","Tutte le combo"],["1xover15","1X + Over 1.5"],["x2over25","X2 + Over 2.5"],["ggover25","GG + Over 2.5"]],
+      corners:[["all","Tutti i corner"],["cornerTotal","Corner totali"],["cornerHome","Corner casa"],["cornerAway","Corner ospite"]],
+      cards:[["all","Tutti i cartellini"],["cardsTotal","Cartellini totali"],["cardsHome","Casa cartellini"],["cardsAway","Ospite cartellini"]],
+      bookings:[["all","Possibili ammoniti"]]
+    };
+    const RISK_PROFILES = {
+      careful:{text:"🛡️ Prudente",minProb:72,maxProb:100,minConfidence:78},
+      balanced:{text:"⚖️ Equilibrato",minProb:58,maxProb:100,minConfidence:70},
+      bold:{text:"🔥 Alta quota",minProb:45,maxProb:78,minConfidence:65}
+    };
+    let state={date:localDate(new Date()),category:"all",market:"all",risk:"balanced",count:3,presenter:"coach",mode:"empty",feeds:[]};
+    function localDate(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");}
+    function safeString(value){return String(value??"").replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);}
+    function humanDate(date){const d=new Date(date+"T12:00:00");return Number.isNaN(d.getTime())?date:d.toLocaleDateString("it-IT",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});}
+    function makeChips(container,options,selected,handler){container.innerHTML="";for(const [value,label] of options){const button=document.createElement("button");button.type="button";button.className="choice"+(value===selected?" active":"");button.textContent=label;button.setAttribute("aria-pressed",String(value===selected));button.addEventListener("click",()=>handler(value));container.append(button);}}
+    function renderControls(){ $("dateInput").value=state.date;
+      makeChips($("categoryChoices"),CATEGORIES,state.category,(v)=>{state.category=v;state.market="all";renderControls();renderAll();});
+      makeChips($("marketChoices"),MARKET_OPTIONS[state.category],state.market,(v)=>{state.market=v;renderControls();renderAll();});
+      makeChips($("riskChoices"),Object.entries(RISK_PROFILES).map(([k,v])=>[k,v.text]),state.risk,(v)=>{state.risk=v;renderControls();renderAll();});
+      makeChips($("countChoices"),[[2,"2 partite"],[3,"3 partite"]],state.count,(v)=>{state.count=v;renderControls();renderAll();});
+      $("presenterSelect").value=state.presenter;$("presenterArt").classList.toggle("player",state.presenter==="player");$("presenterName").textContent=state.presenter==="player"?"Capitano Pixel":"Mister Pixel";
+    }
+    function readStorage(key){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):null;}catch{return null;}}
+    function writeStorage(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}}
+    function normalizeFeed(feed,source){if(!feed || !Array.isArray(feed.matches))return null;const matches=[];for(const entry of feed.matches.slice(0,500)){if(!entry || typeof entry!=="object")continue;
+      const home=String(entry.home||""),away=String(entry.away||"");const date=String(entry.date||entry.kickoff||"").slice(0,10);if(!home||!away||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Array.isArray(entry.markets))continue;
+      const markets=entry.markets.filter(m=>m&&typeof m==="object"&&Number.isFinite(Number(m.probability))&&m.category&&m.label).slice(0,40).map(m=>({category:String(m.category),key:String(m.key||"all"),label:String(m.label),probability:Number(m.probability),confidence:Number(m.confidence),aiScore:Number(m.aiScore)||0,sampleSize:Number(m.sampleSize),flags:Array.isArray(m.flags)?m.flags.map(String):[],reason:String(m.reason||""),source:String(m.source||source)}));
+      matches.push({home,away,date,league:String(entry.league||""),kickoff:String(entry.kickoff||""),markets});}
+      return {source,generatedAt:String(feed.generatedAt||""),matches};
+    }
+    function pickFeeds(rawFeeds){return rawFeeds.map((feed,i)=>normalizeFeed(feed,i===0?"V6 PRO":"V6 CORNER & CARDS")).filter(Boolean);}
+    function sync(){const list=KEYS.map(readStorage).filter(Boolean);const imported=readStorage(IMPORT_KEY);if(imported)list.push(imported);const feeds=pickFeeds(list);if(feeds.length){state.feeds=feeds;state.mode="live";}else{state.feeds=[];state.mode="empty";}renderAll();}
+    function demoFeed(){const date=state.date;const teams=[
+      ["Aurora FC","Stella United","V6 PRO",[["goals","over25","Over 2.5 gol",76,84,8],["combo","1xover15","1X + Over 1.5",68,78,8]]],
+      ["Marina Calcio","Monteluce","V6 CORNER & CARDS",[["corners","cornerTotal","Over 8.5 corner",72,82,9],["cards","cardsTotal","Over 3.5 cartellini",65,77,9]]],
+      ["Valleverde","Porto Azzurro","V6 CORNER & CARDS",[["cards","cardsTotal","Over 4.5 cartellini",58,73,8],["corners","cornerAway","Ospite Over 3.5 corner",70,81,8]]],
+      ["Città del Sole","Sporting Vela","V6 PRO",[["goals","gg","GG - entrambe a segno",69,76,7],["combo","x2over25","X2 + Over 2.5",61,76,7]]],
+      ["Rocca Olimpica","Nuova Fenice","V6 CORNER & CARDS",[["corners","cornerHome","Casa Over 4.5 corner",67,77,9],["bookings","all","Possibile ammonito: Mario Fittizio",55,70,8]]],
+      ["Atletico Bosco","Luna FC","V6 PRO",[["combo","ggover25","GG + Over 2.5",58,72,8],["goals","over15","Over 1.5 gol",84,84,8]]]
+    ];return {generatedAt:new Date().toISOString(),matches:teams.map(([home,away,source,markets])=>({home,away,date,league:"CAMPIONATO DIMOSTRATIVO",markets:markets.map(([category,key,label,probability,confidence,sampleSize])=>({category,key,label,probability,confidence,sampleSize,aiScore:Math.round((probability+confidence)/2),source,flags:[]}))}))};}
+    function checkMarket(m,profile){if(m.probability<profile.minProb||m.probability>profile.maxProb)return "probability";if(!Number.isFinite(m.confidence)||m.confidence<profile.minConfidence)return "confidence";if(!Number.isFinite(m.sampleSize)||m.sampleSize<6)return "sample";if(m.flags.some(x=>["rotation-high","data-poor","postponed","high-uncertainty","unreliable"].includes(x)))return "risk";return null;}
+    function calculate(){const feedMatches=state.feeds.flatMap(f=>f.matches);const profile=RISK_PROFILES[state.risk];let examined=0,rejected=0;const picks=[];const reasonCount={sample:0,confidence:0,probability:0,risk:0};for(const match of feedMatches){if(match.date!==state.date)continue;
+      const options=[];for(const m of match.markets){if(state.category!=="all"&&m.category!==state.category)continue;if(state.market!=="all"&&m.key!==state.market)continue;examined++;const reason=checkMarket(m,profile);if(reason){rejected++;reasonCount[reason]++;continue;}options.push({match,market:m,score:0.65*m.probability+0.25*m.confidence+0.1*Math.min(100,m.aiScore)});}
+      if(options.length){options.sort((a,b)=>b.score-a.score);picks.push(options[0]);}
+    }
+    picks.sort((a,b)=>state.risk==="bold"?b.score-a.score:b.score-a.score);
+    return {picks:picks.slice(0,state.count),eligible:picks.length,examined,rejected,reasonCount};}
+    function renderBoard(result){const shown=result.picks;$("screenDate").textContent=humanDate(state.date).toUpperCase();$("boardMode").textContent=state.risk==="bold"?"RISCHIO ALTO":state.category==="all"?"TUTTI I MERCATI":CATEGORIES.find(x=>x[0]===state.category)?.[1]||"ANALISI";const el=$("screenPicks");
+      if(!shown.length){el.innerHTML='<div class="empty-screen"><div class="empty-symbol">📡</div><strong>Nessuna proposta disponibile</strong><p>'+(state.mode==="empty"?"Sincronizza le V6 o prova la demo per visualizzare il bollettino.":"Per questa data e questi filtri non ci sono mercati abbastanza affidabili.")+'</p></div>';}
+      else{el.innerHTML=shown.map(({match,market},i)=>`<div class="screen-pick"><div><strong>${i+1}. ${safeString(match.home)} – ${safeString(match.away)}</strong><small>${safeString(market.label)}</small><small>${safeString(market.source)} · Fiducia ${Math.round(market.confidence)}%</small></div><div class="pct">${Number(market.probability).toFixed(0)}%<small>STIMA V6</small></div></div>`).join("");}
+      const isDemo=state.mode==="demo";$("topBadge").textContent=isDemo?"MODALITÀ DEMO":state.mode==="live"?"DATI IMPORTATI":"IN ATTESA DATI";$("crawlLabel").textContent=isDemo?"DEMO":state.mode==="live"?"ANALISI":"STUDIO";$("crawlText").textContent=isDemo?"DATI FITTIZI PER TEST DELL'INTERFACCIA · NON SCOMMESSE REALI":shown.length?"NESSUNA PARTITA È GARANTITA · STIME NON VALIDATE STORICAMENTE":"SINCRONIZZA LE V6 E SELEZIONA LA DATA";
+      $("presenterSpeech").textContent=shown.length?`🎙️ ${isDemo?"Attenzione: è una simulazione con squadre inventate. ":"Le percentuali sono stime delle applicazioni V6, non garanzie. "}Ho selezionato ${shown.length} ${shown.length===1?"partita":"partite"} per ${humanDate(state.date)}. ${shown.map((p,i)=>`${i+1}: ${p.match.home} contro ${p.match.away}, ${p.market.label}, stima ${Math.round(p.market.probability)} per cento.`).join(" ")}`:`🎙️ ${state.mode==="empty"?"Benvenuti a V6 Studio TV. Per vedere le previsioni, sincronizzate i dati delle V6 oppure avviate la demo.":"Nessuna partita ha superato i filtri per questa data. Il modello può anche rifiutare tutte le giocate."}`;
+      $("validCount").textContent=result.eligible;$("shownCount").textContent=shown.length;$("rejectedCount").textContent=result.rejected;
+      $("reasonList").innerHTML=`<li>Mercati esaminati per la data: ${result.examined}</li><li>Scartati per probabilità o quota di rischio: ${result.reasonCount.probability}</li><li>Scartati per Confidence: ${result.reasonCount.confidence}</li><li>Scartati per campione inferiore a 6: ${result.reasonCount.sample}</li><li>Scartati per incertezza elevata: ${result.reasonCount.risk}</li>`;
+    }
+    function renderStatus(){const el=$("feedTitle"),desc=$("feedDescription"),icon=$("feedIcon");if(state.mode==="demo"){el.textContent="DEMO ATTIVA · SOLO ESEMPI";desc.textContent="Squadre e percentuali inventate per provare filtri, tabellone e voce.";icon.textContent="🧪";}else if(state.mode==="live"){el.textContent=`${state.feeds.length} feed V6 disponibili`;desc.textContent=state.feeds.map(f=>`${f.source}: ${f.matches.length} partite`).join(" · ");icon.textContent="✅";}else{el.textContent="Nessuna fonte sincronizzata";desc.textContent="Nessun risultato reale disponibile. Il collegamento verrà attivato esportando i risultati dalle due V6.";icon.textContent="⏳";}
+      $("disclaimer").textContent=state.mode==="demo"?"⚠️ MODALITÀ DIMOSTRATIVA: partite, squadre e percentuali sono inventate. Non sono pronostici utilizzabili.":"⚠️ Le percentuali dei modelli non sono garanzie di successo e richiedono validazione su storico. Le quote eque non equivalgono a quelle di un bookmaker.";
+    }
+    function renderAll(){renderStatus();const result=calculate();renderBoard(result);$("marketInfo").textContent=`${RISK_PROFILES[state.risk].text} · Filtri attivi: probabilità ${RISK_PROFILES[state.risk].minProb}–${RISK_PROFILES[state.risk].maxProb}%, Confidence minima ${RISK_PROFILES[state.risk].minConfidence}%, almeno 6 partite di storico. Una scelta per incontro.`;}
+    $("dateInput").addEventListener("change",e=>{if(!e.target.value)return;state.date=e.target.value;if(state.mode==="demo"){state.feeds=pickFeeds([demoFeed()]);}renderAll();});
+    $("presenterSelect").addEventListener("change",e=>{state.presenter=e.target.value;renderControls();});
+    $("demoBtn").addEventListener("click",()=>{state.mode="demo";state.feeds=pickFeeds([demoFeed()]);renderAll();});
+    $("syncBtn").addEventListener("click",()=>{sync();});
+    $("clearBtn").addEventListener("click",()=>{try{localStorage.removeItem(IMPORT_KEY);}catch{}state.mode="empty";state.feeds=[];renderAll();});
+    $("fileInput").addEventListener("change",async(e)=>{const file=e.target.files?.[0];if(!file)return;try{if(file.size>2000000)throw Error("File troppo grande (max 2 MB)");const parsed=JSON.parse(await file.text());const feed=normalizeFeed(parsed,"IMPORTAZIONE MANUALE");if(!feed||!feed.matches.length)throw Error("Formato JSON non valido o nessuna partita riconosciuta");writeStorage(IMPORT_KEY,parsed);state.mode="live";state.feeds=[feed];renderAll();}catch(err){alert("Importazione fallita: "+err.message);}finally{e.target.value="";}});
+    $("voiceBtn").addEventListener("click",()=>{if(!("speechSynthesis" in window)){alert("Il browser non supporta la lettura vocale.");return;}speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance($("presenterSpeech").textContent.replace(/^🎙️\s*/,""));utterance.lang="it-IT";utterance.rate=.94;speechSynthesis.speak(utterance);});
+    window.addEventListener("storage",e=>{if(KEYS.includes(e.key)){if(state.mode!=="demo")sync();}});
+    renderControls();sync();
+  })();
+  </script>
+</body>
+</html>
