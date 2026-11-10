@@ -260,6 +260,64 @@
     }
     function readStorage(key){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):null;}catch{return null;}}
     function writeStorage(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}}
+    
+/* V6 STUDIO TV - Storico pronostici reali */
+const HISTORY_KEY = "v6_studio_history_v1";
+
+function saveRealPicksToHistory(picks) {
+  if (state.mode !== "live" || !Array.isArray(picks)) return;
+
+  const previous = readStorage(HISTORY_KEY);
+  const history = Array.isArray(previous) ? previous : [];
+  const saved = new Set(history.map(item => item.id));
+  const today = localDate(new Date());
+  let changed = false;
+
+  for (const { match, market } of picks) {
+    if (!match?.date || match.date < today) continue;
+
+    const kickoff = Date.parse(match.kickoff || "");
+    if (Number.isFinite(kickoff) && kickoff <= Date.now()) {
+      continue;
+    }
+
+    const id = [
+      match.date,
+      match.home,
+      match.away,
+      market.source,
+      market.category,
+      market.key,
+      market.label
+    ].map(value =>
+      String(value || "").trim().toLowerCase()
+    ).join("|");
+
+    if (saved.has(id)) continue;
+
+    history.push({
+      id,
+      date: match.date,
+      home: match.home,
+      away: match.away,
+      source: market.source,
+      category: market.category,
+      key: market.key,
+      label: market.label,
+      probability: market.probability,
+      confidence: market.confidence,
+      sampleSize: market.sampleSize,
+      recordedAt: new Date().toISOString(),
+      status: "pending"
+    });
+
+    saved.add(id);
+    changed = true;
+  }
+
+  if (changed) writeStorage(HISTORY_KEY, history);
+}
+
     function normalizeFeed(feed,source){if(!feed || !Array.isArray(feed.matches))return null;const matches=[];for(const entry of feed.matches.slice(0,500)){if(!entry || typeof entry!=="object")continue;
       const home=String(entry.home||""),away=String(entry.away||"");const date=String(entry.date||entry.kickoff||"").slice(0,10);if(!home||!away||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Array.isArray(entry.markets))continue;
       const markets=entry.markets.filter(m=>m&&typeof m==="object"&&Number.isFinite(Number(m.probability))&&m.category&&m.label).slice(0,40).map(m=>({category:String(m.category),key:String(m.key||"all"),label:String(m.label),probability:Number(m.probability),confidence:Number(m.confidence),aiScore:Number(m.aiScore)||0,sampleSize:Number(m.sampleSize),flags:Array.isArray(m.flags)?m.flags.map(String):[],reason:String(m.reason||""),source:String(m.source||source)}));
