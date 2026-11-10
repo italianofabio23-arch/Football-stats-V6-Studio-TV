@@ -407,9 +407,17 @@ function showBroadcastPick() {
     bold: "alta quota"
   }[state.risk] || "equilibrato";
 
-  const storico = Number.isFinite(market.sampleSize)
-    ? `Il campione del modello comprende ${Math.round(market.sampleSize)} partite. `
-    : "";
+  
+const storico =
+  !Number.isFinite(market.sampleSize) ||
+  market.sampleSize <= 0
+    ? "Campione storico non disponibile. La solidità della stima non è valutabile. "
+    : market.sampleSize < 12
+      ? `Campione limitato: ${Math.round(market.sampleSize)} partite. La Confidence del modello non è un tasso di successo verificato. `
+      : market.sampleSize < 30
+        ? `Campione intermedio: ${Math.round(market.sampleSize)} partite. Serve prudenza e una verifica sui risultati reali. `
+        : `Campione più ampio: ${Math.round(market.sampleSize)} partite. Questo non dimostra che la probabilità sia accurata. `;
+  
 
   const demo = state.mode === "demo"
     ? "Attenzione: questa è una simulazione. "
