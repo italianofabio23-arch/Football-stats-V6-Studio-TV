@@ -316,6 +316,26 @@ for (let i = 0; i < picks.length;) {
     function renderBoard(result){const shown=result.picks;$("screenDate").textContent=humanDate(state.date).toUpperCase();$("boardMode").textContent=state.risk==="bold"?"RISCHIO ALTO":state.category==="all"?"TUTTI I MERCATI":CATEGORIES.find(x=>x[0]===state.category)?.[1]||"ANALISI";const el=$("screenPicks");
       if(!shown.length){el.innerHTML='<div class="empty-screen"><div class="empty-symbol">📡</div><strong>Nessuna proposta disponibile</strong><p>'+(state.mode==="empty"?"Sincronizza le V6 o prova la demo per visualizzare il bollettino.":"Per questa data e questi filtri non ci sono mercati abbastanza affidabili.")+'</p></div>';}
       else{el.innerHTML=shown.map(({match,market},i)=>`<div class="screen-pick"><div><strong>${i+1}. ${safeString(match.home)} – ${safeString(match.away)}</strong><small>${safeString(market.label)}</small><small>${safeString(market.source)} · Fiducia ${Math.round(market.confidence)}%</small></div><div class="pct">${Number(market.probability).toFixed(0)}%<small>STIMA V6</small></div></div>`).join("");}
+                                 
+/* V6 STUDIO TV - Indicatore campione statistico */
+el.querySelectorAll(".screen-pick").forEach((card, i) => {
+  const sample = Number(shown[i].market.sampleSize);
+  const note = document.createElement("small");
+
+  if (!Number.isFinite(sample) || sample <= 0) {
+    note.textContent = "⚠️ Campione non disponibile";
+  } else if (sample < 12) {
+    note.textContent = `⚠️ Campione limitato: ${sample} partite`;
+  } else if (sample < 30) {
+    note.textContent = `📊 Campione intermedio: ${sample} partite`;
+  } else {
+    note.textContent = `📊 Campione più ampio: ${sample} partite`;
+  }
+
+  note.style.color = "#f0c078";
+  card.querySelector("div").appendChild(note);
+});
+                                 
       const isDemo=state.mode==="demo";$("topBadge").textContent=isDemo?"MODALITÀ DEMO":state.mode==="live"?"DATI IMPORTATI":"IN ATTESA DATI";$("crawlLabel").textContent=isDemo?"DEMO":state.mode==="live"?"ANALISI":"STUDIO";$("crawlText").textContent=isDemo?"DATI FITTIZI PER TEST DELL'INTERFACCIA · NON SCOMMESSE REALI":shown.length?"NESSUNA PARTITA È GARANTITA · STIME NON VALIDATE STORICAMENTE":"SINCRONIZZA LE V6 E SELEZIONA LA DATA";
       $("presenterSpeech").textContent=shown.length?`🎙️ ${isDemo?"Attenzione: è una simulazione con squadre inventate. ":"Le percentuali sono stime delle applicazioni V6, non garanzie. "}Ho selezionato ${shown.length} ${shown.length===1?"partita":"partite"} per ${humanDate(state.date)}. ${shown.map((p,i)=>`${i+1}: ${p.match.home} contro ${p.match.away}, ${p.market.label}, stima ${Math.round(p.market.probability)} per cento.`).join(" ")}`:`🎙️ ${state.mode==="empty"?"Benvenuti a V6 Studio TV. Per vedere le previsioni, sincronizzate i dati delle V6 oppure avviate la demo.":"Nessuna partita ha superato i filtri per questa data. Il modello può anche rifiutare tutte le giocate."}`;
       $("validCount").textContent=result.eligible;$("shownCount").textContent=shown.length;$("rejectedCount").textContent=result.rejected;
