@@ -651,21 +651,44 @@ const storico =
     ? "Attenzione: questa è una simulazione. "
     : "";
 
-  $("presenterSpeech").textContent =
-    `🎙️ ${demo}Partita ${broadcastIndex + 1} di ${broadcastPicks.length}. ` +
-    `${match.home} contro ${match.away}. ` +
-    `Analizziamo il mercato ${tipoMercato}. ` +
-    `Il pronostico selezionato è ${market.label}. ` +
-    `Probabilità stimata ${Math.round(market.probability)} per cento, ` +
-    `con Confidence ${Math.round(market.confidence)} per cento. ` +
-    `${storico}` +
-    `Questa proposta ha superato i filtri del profilo ${profilo} ` +
-    `e ha ottenuto il punteggio migliore per questo incontro. ` +
-    `Ricordiamo che le percentuali non garantiscono il risultato ` +
-    `e senza una quota bookmaker non possiamo valutare il valore della giocata.`;
   
+const introCoach =
+  `🎙️ ${demo}Partita ${broadcastIndex + 1} di ${broadcastPicks.length}. ` +
+  `${match.home} contro ${match.away}. ` +
+  `Analizziamo il mercato ${tipoMercato}. ` +
+  `Il pronostico selezionato è ${market.label}. ` +
+  `Probabilità stimata ${Math.round(market.probability)} per cento, ` +
+  `con Confidence ${Math.round(market.confidence)} per cento. ` +
+  `${storico}` +
+  `La proposta ha superato i filtri del profilo ${profilo}. ` +
+  `Le percentuali non garantiscono il risultato.`;
 
-  $("broadcastStartBtn").disabled = true;
+const introAnalyst =
+  `🎙️ ${demo}Sono Maya Pixel. ` +
+  `Analizziamo ${match.home} contro ${match.away}. ` +
+  `Il mercato selezionato è ${market.label}. ` +
+  `La probabilità stimata è ${Math.round(market.probability)} per cento, ` +
+  `con Confidence ${Math.round(market.confidence)} per cento. ` +
+  `${storico}` +
+  `Valutiamo sempre anche il rischio e la quota bookmaker.`;
+
+const introPlayer =
+  `🎙️ ${demo}Sono Capitano Pixel. ` +
+  `Oggi analizziamo ${match.home} contro ${match.away}. ` +
+  `La giocata è ${market.label}. ` +
+  `Probabilità stimata ${Math.round(market.probability)} per cento, ` +
+  `Confidence ${Math.round(market.confidence)} per cento. ` +
+  `${storico}` +
+  `Anche una buona previsione richiede prudenza.`;
+
+$("presenterSpeech").textContent =
+  state.presenter === "analyst"
+    ? introAnalyst
+    : state.presenter === "player"
+      ? introPlayer
+      : introCoach;
+  
+   $("broadcastStartBtn").disabled = true;
   $("broadcastNextBtn").disabled =
     broadcastIndex >= broadcastPicks.length - 1;
   $("broadcastStopBtn").disabled = false;
