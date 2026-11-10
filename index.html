@@ -316,8 +316,37 @@ function saveRealPicksToHistory(picks) {
   }
 
   if (changed) writeStorage(HISTORY_KEY, history);
+  
+renderHistoryCounts();
+    
 }
 
+/* V6 STUDIO TV - Contatori storico */
+function renderHistoryCounts() {
+  const stored = readStorage(HISTORY_KEY);
+  const history = Array.isArray(stored) ? stored : [];
+
+  const pending = history.filter(
+    item => item.status === "pending"
+  ).length;
+
+  const wins = history.filter(
+    item => item.status === "win"
+  ).length;
+
+  const losses = history.filter(
+    item => item.status === "lose"
+  ).length;
+
+  $("historyPendingCount").textContent = pending;
+  $("historyWinCount").textContent = wins;
+  $("historyLoseCount").textContent = losses;
+
+  $("historyInfo").textContent =
+    `Pronostici da verificare: ${pending}. ` +
+    `Esiti verificati: ${wins + losses}.`;
+}
+    
     function normalizeFeed(feed,source){if(!feed || !Array.isArray(feed.matches))return null;const matches=[];for(const entry of feed.matches.slice(0,500)){if(!entry || typeof entry!=="object")continue;
       const home=String(entry.home||""),away=String(entry.away||"");const date=String(entry.date||entry.kickoff||"").slice(0,10);if(!home||!away||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Array.isArray(entry.markets))continue;
       const markets=entry.markets.filter(m=>m&&typeof m==="object"&&Number.isFinite(Number(m.probability))&&m.category&&m.label).slice(0,40).map(m=>({category:String(m.category),key:String(m.key||"all"),label:String(m.label),probability:Number(m.probability),confidence:Number(m.confidence),aiScore:Number(m.aiScore)||0,sampleSize:Number(m.sampleSize),flags:Array.isArray(m.flags)?m.flags.map(String):[],reason:String(m.reason||""),source:String(m.source||source)}));
@@ -620,6 +649,9 @@ $("broadcastStopBtn").addEventListener("click", () => {
 });
     
     window.addEventListener("storage",e=>{if(KEYS.includes(e.key)){if(state.mode!=="demo")sync();}});
+    
+renderHistoryCounts();
+    
     renderControls();sync();
   })();
   </script>
