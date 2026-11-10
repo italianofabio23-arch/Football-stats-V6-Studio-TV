@@ -66,6 +66,21 @@
   }
 }
     
+/* V6 STUDIO TV - Stile Maya Pixel */
+#presenterArt.analyst .jacket {
+  fill: #803d8f;
+}
+
+#presenterArt.analyst .lapel {
+  fill: #a75ac2;
+  stroke: #e4b9f3;
+}
+
+#presenterArt.analyst .tie {
+  fill: #f4c7ea;
+    }
+    
+    
 /* V6 STUDIO TV - Transizione televisiva */
 #screenPicks {
   transition:
@@ -177,7 +192,16 @@
         <label class="field-label">NUMERO PARTITE SULLO SCHERMO</label>
         <div class="segments" id="countChoices"></div>
         <div class="rule"></div>
-        <div class="presenter-select"><label class="field-label" for="presenterSelect" style="margin:0">PRESENTATORE</label><select id="presenterSelect"><option value="coach">🧑‍💼 Allenatore cartoon</option><option value="player">⚽ Calciatore cartoon</option></select></div>
+        
+<div class="presenter-select">
+  <label class="field-label" for="presenterSelect" style="margin:0">PRESENTATORE</label>
+  <select id="presenterSelect">
+    <option value="coach">🧑‍💼 Mister Pixel</option>
+    <option value="player">⚽ Capitano Pixel</option>
+    <option value="analyst">🎙️ Maya Pixel - Opinionista</option>
+  </select>
+</div>
+        
       </section>
       <section class="card data-card" aria-label="Fonti e bollettino">
         <h3>📡 <span>DATI</span> &amp; ANALISI</h3>
@@ -256,7 +280,28 @@
       makeChips($("marketChoices"),MARKET_OPTIONS[state.category],state.market,(v)=>{state.market=v;renderControls();renderAll();});
       makeChips($("riskChoices"),Object.entries(RISK_PROFILES).map(([k,v])=>[k,v.text]),state.risk,(v)=>{state.risk=v;renderControls();renderAll();});
       makeChips($("countChoices"),[[2,"2 partite"],[3,"3 partite"]],state.count,(v)=>{state.count=v;renderControls();renderAll();});
-      $("presenterSelect").value=state.presenter;$("presenterArt").classList.toggle("player",state.presenter==="player");$("presenterName").textContent=state.presenter==="player"?"Capitano Pixel":"Mister Pixel";
+      
+$("presenterSelect").value = state.presenter;
+
+const art = $("presenterArt");
+
+art.classList.toggle(
+  "player",
+  state.presenter === "player"
+);
+
+art.classList.toggle(
+  "analyst",
+  state.presenter === "analyst"
+);
+
+$("presenterName").textContent =
+  state.presenter === "player"
+    ? "Capitano Pixel"
+    : state.presenter === "analyst"
+      ? "Maya Pixel"
+      : "Mister Pixel";
+        
     }
     function readStorage(key){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):null;}catch{return null;}}
     function writeStorage(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}}
