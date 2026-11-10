@@ -558,6 +558,9 @@ $("broadcastStartBtn").addEventListener("click", () => {
   }
 
   broadcastPicks = result.picks.slice();
+  
+saveRealPicksToHistory(broadcastPicks);
+  
   broadcastIndex = 0;
   showBroadcastPick();
 });
