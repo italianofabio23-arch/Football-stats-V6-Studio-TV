@@ -573,12 +573,60 @@ $("voiceBtn").addEventListener("click", () => {
   speechSynthesis.cancel();
   presenter.classList.remove("speaking");
 
-  const utterance = new SpeechSynthesisUtterance(
-    $("presenterSpeech").textContent.replace(/^🎙️\s*/, "")
+  
+/* V6 STUDIO TV - Voci personalizzate */
+
+const presenterName =
+  state.presenter === "analyst"
+    ? "Maya Pixel"
+    : state.presenter === "player"
+      ? "Capitano Pixel"
+      : "Mister Pixel";
+
+let speechText = $("presenterSpeech")
+  .textContent.replace(/^🎙️\s*/, "");
+
+const presenterIntro =
+  /Sono (Mister Pixel|Capitano Pixel|Maya Pixel)\./;
+
+if (presenterIntro.test(speechText)) {
+  speechText = speechText.replace(
+    presenterIntro,
+    `Sono ${presenterName}.`
+  );
+} else {
+  speechText = `Sono ${presenterName}. ${speechText}`;
+}
+
+$("presenterSpeech").textContent =
+  `🎙️ ${speechText}`;
+
+const utterance =
+  new SpeechSynthesisUtterance(speechText);
+
+utterance.lang = "it-IT";
+
+utterance.rate =
+  state.presenter === "analyst" ? 1.05 :
+  state.presenter === "player" ? 0.90 : 0.94;
+
+utterance.pitch =
+  state.presenter === "analyst" ? 1.35 :
+  state.presenter === "player" ? 0.80 : 1.0;
+
+const italianVoices = speechSynthesis.getVoices()
+  .filter(v => v.lang.toLowerCase().startsWith("it"));
+
+if (state.presenter === "analyst") {
+  const mayaVoice = italianVoices.find(v =>
+    /alice|elsa|lucia|silvia|paola|female/i.test(v.name)
   );
 
-  utterance.lang = "it-IT";
-  utterance.rate = 0.94;
+  if (mayaVoice) {
+    utterance.voice = mayaVoice;
+  }
+}
+  
 
   activeSpeech = utterance;
 
