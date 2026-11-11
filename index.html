@@ -48,9 +48,9 @@
 }
     
 /* V6 STUDIO TV - Spia IN DIRETTA */
-#tvBroadcastControls:has(
-  #broadcastStopBtn:not(:disabled)
-)::before {
+
+#broadcastStartBtn:disabled::after {
+  
   content: "🔴 IN DIRETTA";
   display: flex;
   align-items: center;
