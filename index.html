@@ -251,6 +251,20 @@
     <option value="analyst">🎙️ Maya Pixel - Opinionista</option>
   </select>
 </div>
+       
+<!-- V6 STUDIO TV - Voce Maya Pixel -->
+<div class="presenter-select">
+  <label class="field-label"
+         for="mayaVoiceSelect">
+    🎙️ VOCE MAYA PIXEL
+  </label>
+
+  <select id="mayaVoiceSelect">
+    <option value="">
+      Caricamento voci italiane...
+    </option>
+  </select>
+</div>
         
       </section>
       <section class="card data-card" aria-label="Fonti e bollettino">
@@ -560,6 +574,45 @@ el.querySelectorAll(".screen-pick").forEach((card, i) => {
     $("clearBtn").addEventListener("click",()=>{try{localStorage.removeItem(IMPORT_KEY);}catch{}state.mode="empty";state.feeds=[];renderAll();});
     $("fileInput").addEventListener("change",async(e)=>{const file=e.target.files?.[0];if(!file)return;try{if(file.size>2000000)throw Error("File troppo grande (max 2 MB)");const parsed=JSON.parse(await file.text());const feed=normalizeFeed(parsed,"IMPORTAZIONE MANUALE");if(!feed||!feed.matches.length)throw Error("Formato JSON non valido o nessuna partita riconosciuta");writeStorage(IMPORT_KEY,parsed);state.mode="live";state.feeds=[feed];renderAll();}catch(err){alert("Importazione fallita: "+err.message);}finally{e.target.value="";}});
     
+/* V6 STUDIO TV - Elenco voci Maya */
+function loadMayaVoices() {
+  const select = $("mayaVoiceSelect");
+  if (!select || !("speechSynthesis" in window)) return;
+
+  const previous = select.value;
+  const voices = speechSynthesis.getVoices()
+    .filter(v => v.lang.toLowerCase().startsWith("it"));
+
+  select.replaceChildren();
+
+  const first = document.createElement("option");
+  first.value = "";
+  first.textContent = voices.length
+    ? "Seleziona una voce italiana"
+    : "Nessuna voce italiana disponibile";
+
+  select.appendChild(first);
+
+  voices.forEach(voice => {
+    const option = document.createElement("option");
+    option.value = voice.voiceURI;
+    option.textContent = voice.name;
+    select.appendChild(option);
+  });
+
+  if (voices.some(v => v.voiceURI === previous)) {
+    select.value = previous;
+  }
+}
+
+if ("speechSynthesis" in window) {
+  loadMayaVoices();
+  speechSynthesis.addEventListener(
+    "voiceschanged",
+    loadMayaVoices
+  );
+    }
+      
 let activeSpeech = null;
 
 $("voiceBtn").addEventListener("click", () => {
@@ -628,6 +681,19 @@ if (state.presenter === "analyst") {
 }
   
 
+/* V6 STUDIO TV - Voce manuale Maya */
+if (state.presenter === "analyst") {
+  const selectedVoiceId = $("mayaVoiceSelect").value;
+
+  const selectedVoice = italianVoices.find(
+    voice => voice.voiceURI === selectedVoiceId
+  );
+
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+  }
+    }
+    
   activeSpeech = utterance;
 
   utterance.onstart = () => {
