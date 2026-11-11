@@ -47,6 +47,34 @@
   z-index: -1;
 }
     
+/* V6 STUDIO TV - Spia IN DIRETTA */
+#tvBroadcastControls:has(
+  #broadcastStopBtn:not(:disabled)
+)::before {
+  content: "🔴 IN DIRETTA";
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: #741c28;
+  color: white;
+  border: 1px solid #ff6060;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  box-shadow: 0 0 15px #ff454566;
+  animation: studioLiveGlow 1.2s infinite alternate;
+}
+
+@keyframes studioLiveGlow {
+  from {
+    box-shadow: 0 0 5px #ff454533;
+  }
+  to {
+    box-shadow: 0 0 18px #ff454599;
+  }
+}
+    
 /* V6 STUDIO TV - Animazione occhi presentatore */
 .presenter-art ellipse[fill="#1d3038"] {
   transform-box: fill-box;
