@@ -66,33 +66,53 @@
   animation: studioLiveGlow 1.2s infinite alternate;
 }
 
-@keyframes studioLiveGlow {
-  from {
-    box-shadow: 0 0 5px #ff454533;
-  }
-  to {
-    box-shadow: 0 0 18px #ff454599;
-  }
-}
-    
-/* V6 STUDIO TV - Animazione occhi presentatore */
-.presenter-art ellipse[fill="#1d3038"] {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: studioBlink 5s infinite;
+ /* V6 STUDIO TV - Stile Maya Pixel */
+#presenterArt.analyst .jacket {
+  fill: #7c3f97;
 }
 
-
-@keyframes studioBlink {
-  0%, 78%, 91%, 100% {
-    transform: scaleY(1);
-  }
-  81%, 87% {
-    transform: scaleY(0.02);
-  }
+#presenterArt.analyst .lapel {
+  fill: #b26be0;
+  stroke: #e8c8ff;
 }
-    
-    
+
+#presenterArt.analyst .tie {
+  fill: #ffd3ef;
+}
+
+#presenterArt.analyst .shirt {
+  fill: #f8fbff;
+}
+
+#presenterArt .maya-hair,
+#presenterArt .maya-female {
+  display: none;
+}
+
+#presenterArt.analyst .maya-hair,
+#presenterArt.analyst .maya-female {
+  display: inline;
+}
+
+#presenterArt.analyst .maya-face-line {
+  fill: none;
+  stroke: #6a4168;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#presenterArt.analyst .maya-lips {
+  fill: #c96c97;
+  stroke: #8c4c6c;
+  stroke-width: 1.2;
+}
+
+#presenterArt.analyst .maya-jewel {
+  fill: #87d8ff;
+  stroke: #dff7ff;
+  stroke-width: 1.2;
+}
 /* V6 STUDIO TV - Bocca animata */
 #presenterArt.speaking #presenterSmile {
   opacity: 0;
@@ -232,6 +252,21 @@
   <circle cx="179" cy="139" r="4"
           fill="#f7cf75"/>
 </g>
+          <g class="maya-female">
+  <path class="maya-face-line" d="M80 118 Q86 114 92 118" />
+  <path class="maya-face-line" d="M126 118 Q132 114 138 118" />
+
+  <path class="maya-face-line" d="M81 123 Q86 121 91 123" />
+  <path class="maya-face-line" d="M127 123 Q132 121 137 123" />
+
+  <path class="maya-lips" d="M97 157 Q112 163 127 157 Q112 170 97 157Z" />
+
+  <circle class="maya-jewel" cx="65" cy="139" r="3.4" />
+  <circle class="maya-jewel" cx="179" cy="139" r="3.4" />
+
+  <path class="maya-face-line" d="M97 189 Q112 197 127 189" />
+  <circle class="maya-jewel" cx="112" cy="196" r="3" />
+          </g>
           
           <path d="M82 103 Q97 95 110 102 M134 102 Q148 96 161 104" fill="none" stroke="#49352e" stroke-width="5" stroke-linecap="round"/>
           <ellipse cx="99" cy="119" rx="5" ry="6" fill="#1d3038"/><ellipse cx="146" cy="119" rx="5" ry="6" fill="#1d3038"/>
