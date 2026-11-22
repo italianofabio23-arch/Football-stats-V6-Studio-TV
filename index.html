@@ -1870,7 +1870,36 @@ studioScanBtn.addEventListener("click", async () => {
             cornerError
           );
         }
+        // V6 STUDIO - TEST CARTELLINI GIALLI FT
+        try {
+          const batchKey =
+            studioScan.date + "|" +
+            Math.floor(studioScan.index / 6);
 
+          const hasPick = studioScan.picks.some(p =>
+            Number(p.game?.fixture?.id) ===
+            Number(game.fixture?.id)
+          );
+
+          if (
+            !hasPick &&
+            studioScan.cardsApiBatch !== batchKey
+          ) {
+            studioScan.cardsApiBatch = batchKey;
+
+            const cardPick =
+              await studioGetYellowCardCandidate(game);
+
+            if (cardPick) {
+              studioScan.picks.push(cardPick);
+            }
+          }
+        } catch (cardError) {
+          console.warn(
+            "Scanner Expert Cartellini FT:",
+            cardError
+          );
+        }
         studioScan.index++;
       }
     }
