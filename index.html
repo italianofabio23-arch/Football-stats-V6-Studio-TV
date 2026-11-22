@@ -1056,10 +1056,73 @@ $("crawlText").textContent = strongSignal
   ? "ANOMALIA GOL PRIMO TEMPO RILEVATA"
   : "FILTRO ANTI-FALSE: SEGNALE NON SUFFICIENTE";
     
+
+/* V6 EXPERT - SOLO ESITI APPROVATI */
+
+$("boardMode").textContent =
+  "SELEZIONI ANOMALIE EXPERT";
+
+if (strongSignal) {
+
+  $("screenPicks").innerHTML = `
+    <div class="screen-pick">
+      <div>
+        <strong>
+          ✅ ${safeString(match.teams.home.name)}
+          - ${safeString(match.teams.away.name)}
+        </strong>
+
+        <small>⚽ CASA OVER 0.5 GOL 1T</small>
+
+        <small>
+          🏠 Casa segna:
+          ${homeHits}/${verifiedHome.length}
+        </small>
+
+        <small>
+          ✈️ Ospite subisce:
+          ${awayHits}/${awayGames.length}
+        </small>
+
+        <small>✅ ANOMALIA STORICA CONFERMATA</small>
+      </div>
+    </div>
+  `;
+
+  $("presenterSpeech").textContent =
+    "🎙️ Anomalia Expert rilevata. " +
+    match.teams.home.name +
+    " contro " + match.teams.away.name +
+    ". Mercato: squadra di casa segna " +
+    "almeno un gol nel primo tempo. " +
+    "Entrambi gli storici superano " +
+    "il filtro statistico.";
+
+  $("topBadge").textContent = "ANOMALIA EXPERT";
+
+} else {
+
+  $("screenPicks").innerHTML = `
+    <div class="empty-screen">
+      <strong>🛡️ Nessuna selezione Expert</strong>
+      <p>Nessuna anomalia approvata.</p>
+    </div>
+  `;
+
+  $("presenterSpeech").textContent =
+    "🎙️ Nessuna selezione Expert disponibile.";
+
+  $("topBadge").textContent = "NESSUNA SELEZIONE";
+}
+
+$("crawlText").textContent =
+  "SOLO ANOMALIE STATISTICHE APPROVATE";
+
 $("screenPicks").scrollIntoView({
   behavior: "smooth",
   block: "center"
 });
+    
   
   
 
