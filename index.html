@@ -1442,7 +1442,91 @@ studioScanBtn.addEventListener("click", async () => {
       "SCANNER ANOMALIE EXPERT";
 
     const picks = studioScan.picks;
+    // V6 STUDIO - DIAGNOSTICA CORNER FT
+    const rawCornerHistory = readStorage(
+      "corner_cards_prediction_history_v1"
+    );
 
+    const cornerHistory = (
+      Array.isArray(rawCornerHistory)
+        ? rawCornerHistory : []
+    ).filter(item =>
+      item.source === "historical-backfill" &&
+      item.status === "settled" &&
+      item.type === "corner" &&
+      Number(item.line) === 7.5 &&
+      item.result != null &&
+      Number.isInteger(Number(item.result)) &&
+      Number(item.result) >= 0
+    );
+
+    const cornerNorm = value =>
+      String(value || "").trim().toLowerCase();
+
+    let cornerLeaguesFound = 0;
+    let cornerSamplesReady = 0;
+
+    const checkedGames = studioScan.games.slice(
+      0, studioScan.index
+    );
+
+    for (const fixture of checkedGames) {
+      const kickoff = Date.parse(
+        fixture.fixture?.date || ""
+      );
+
+      if (!Number.isFinite(kickoff)) continue;
+
+      const rows = cornerHistory.filter(item => {
+        const played = Date.parse(item.date || "");
+
+        return Number.isFinite(played) &&
+          played < kickoff &&
+          kickoff - played <= 366 * 86400000 &&
+          cornerNorm(item.league) ===
+            cornerNorm(fixture.league?.name);
+      });
+
+      if (rows.length) cornerLeaguesFound++;
+
+      const homeCount = rows.filter(item =>
+        cornerNorm(item.home) ===
+        cornerNorm(fixture.teams?.home?.name)
+      ).length;
+
+      const awayCount = rows.filter(item =>
+        cornerNorm(item.away) ===
+        cornerNorm(fixture.teams?.away?.name)
+      ).length;
+
+      if (homeCount >= 8 && awayCount >= 8) {
+        cornerSamplesReady++;
+      }
+    }
+
+    let cornerReport = $("studioCornerReport");
+
+    if (!cornerReport) {
+      cornerReport = document.createElement("p");
+      cornerReport.id = "studioCornerReport";
+      cornerReport.className = "tiny-note";
+
+      studioScanBtn.parentElement.insertAdjacentElement(
+        "afterend", cornerReport
+      );
+    }
+
+    cornerReport.textContent =
+      "🚩 CORNER FT | Storici reali Over 7.5: " +
+      cornerHistory.length +
+      " | Partite con dati campionato: " +
+      cornerLeaguesFound +
+      " | Campioni sufficienti: " +
+      cornerSamplesReady +
+      " | Corner approvati: " +
+      picks.filter(p =>
+        p.market === "TOTALE OVER 7.5 CORNER FT"
+      ).length;
     $("screenPicks").innerHTML = picks.length
       ? picks.map(p => `
           <div class="screen-pick">
