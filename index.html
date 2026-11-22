@@ -707,12 +707,77 @@ anomalyTestBtn.addEventListener("click", async () => {
       ["NS", "TBD"].includes(game.fixture?.status?.short)
     );
 
-    alert(
-      "✅ API EXPERT ATTIVA\n" +
-      "Data: " + date + "\n" +
-      "Partite ricevute: " + games.length + "\n" +
-      "Da giocare: " + upcoming.length
-    );
+  
+/* V6 EXPERT - TEST STORICO GOL 1T */
+const topLeagues = [135, 140, 39, 78, 61, 88, 144];
+
+const match = upcoming.find(g =>
+  topLeagues.includes(Number(g.league?.id))
+) || upcoming.find(g => g.teams?.home?.id);
+
+if (!match) {
+  throw new Error("Nessuna partita futura valida");
+}
+
+const teamId = match.teams.home.id;
+
+const historyUrl =
+  "https://football-stats-v3.onrender.com/api/football" +
+  "?path=%2Ffixtures" +
+  "&team=" + teamId +
+  "&last=35&status=FT";
+
+const historyResponse = await fetch(historyUrl, {
+  cache: "no-store"
+});
+
+if (!historyResponse.ok) {
+  throw new Error("Storico HTTP " + historyResponse.status);
+}
+
+const historyData = await historyResponse.json();
+
+if (!Array.isArray(historyData.response)) {
+  throw new Error("Storico API non valido");
+}
+
+const homeGames = historyData.response
+  .filter(g =>
+    g.teams?.home?.id === teamId &&
+    g.league?.id === match.league?.id &&
+    new Date(g.fixture?.date).getTime() <
+      new Date(match.fixture.date).getTime() &&
+    Number.isInteger(g.score?.halftime?.home) &&
+    Number.isInteger(g.score?.halftime?.away)
+  )
+  .sort((a, b) =>
+    new Date(b.fixture.date) - new Date(a.fixture.date)
+  )
+  .slice(0, 10);
+
+const total = homeGames.length;
+
+const scored1T = homeGames.filter(g =>
+  g.score.halftime.home >= 1
+).length;
+
+const conceded1T = homeGames.filter(g =>
+  g.score.halftime.away >= 1
+).length;
+
+alert(
+  "✅ TEST STORICO EXPERT\n" +
+  "Partita: " + match.teams.home.name +
+  " - " + match.teams.away.name + "\n" +
+  "Campionato: " + match.league.name + "\n" +
+  "Campione casa: " + total + "/10\n" +
+  "Gol segnato 1T: " + scored1T + "/" + total + "\n" +
+  "Gol subito 1T: " + conceded1T + "/" + total + "\n" +
+  (total < 6
+    ? "⚠️ Campione insufficiente"
+    : "✅ Campione minimo raggiunto")
+);
+  
 
   } catch (error) {
     alert("❌ Errore collegamento API: " + error.message);
