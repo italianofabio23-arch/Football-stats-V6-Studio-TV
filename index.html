@@ -1186,6 +1186,88 @@ async function studioTeamGames(teamId) {
   studioScan.cache.set(teamId, games);
   return games;
 }
+    /* V6 STUDIO - RECUPERO CORNER REALI FT */
+const studioCornerStatsCache = new Map();
+
+async function studioCornerTotalByFixture(fixtureId) {
+  const id = Number(fixtureId);
+
+  if (!Number.isInteger(id) || id <= 0) {
+    return null;
+  }
+
+  if (studioCornerStatsCache.has(id)) {
+    return studioCornerStatsCache.get(id);
+  }
+
+  const request = (async () => {
+    try {
+      const saved = readStorage(
+        "corner_cards_prediction_history_v1"
+      );
+
+      const previous = Array.isArray(saved)
+        ? saved.find(item =>
+            Number(item.fixtureId) === id &&
+            item.source === "historical-backfill" &&
+            item.status === "settled" &&
+            item.type === "corner" &&
+            Number(item.line) === 7.5 &&
+            item.result != null &&
+            Number.isInteger(Number(item.result)) &&
+            Number(item.result) >= 0
+          )
+        : null;
+
+      if (previous) {
+        return Number(previous.result);
+      }
+
+      const url =
+        "https://football-stats-v3.onrender.com/api/football" +
+        "?path=%2Ffixtures%2Fstatistics&fixture=" + id;
+
+      const rows = await studioApiGet(url);
+
+      if (rows.length !== 2) return null;
+
+      const values = rows.map(row => {
+        const stat = (row.statistics || []).find(
+          s => String(s.type || "").toLowerCase() ===
+            "corner kicks"
+        );
+
+        return stat?.value;
+      });
+
+      if (values.some(value =>
+        value == null ||
+        value === "" ||
+        !Number.isInteger(Number(value)) ||
+        Number(value) < 0
+      )) {
+        return null;
+      }
+
+      return values.reduce(
+        (sum, value) => sum + Number(value), 0
+      );
+
+    } catch (error) {
+      console.warn(
+        "Corner FT non disponibili:",
+        id,
+        error
+      );
+
+      return null;
+    }
+  })();
+
+  studioCornerStatsCache.set(id, request);
+
+  return request;
+    }
 /* V6 STUDIO - ANOMALIE CORNER TOTALI FT */
 function studioGetCornerFtCandidate(game) {
   const stored = readStorage(
