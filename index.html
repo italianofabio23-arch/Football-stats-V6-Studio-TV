@@ -901,6 +901,83 @@ details.forEach(line => {
   extra.appendChild(element);
 });
 
+/* V6 EXPERT - TEST CORNER 1T E 2T */
+
+const sampleMatch = verifiedHome[0];
+
+const addCornerLine = text => {
+  const line = document.createElement("small");
+  line.textContent = text;
+  extra.appendChild(line);
+};
+
+addCornerLine("🚩 TEST CORNER PER TEMPO");
+
+if (!sampleMatch?.fixture?.id) {
+  addCornerLine("⚠️ Nessuna partita storica disponibile");
+} else {
+  try {
+    const statsUrl =
+      "https://football-stats-v3.onrender.com/api/football" +
+      "?path=%2Ffixtures%2Fstatistics" +
+      "&fixture=" + sampleMatch.fixture.id +
+      "&half=true";
+
+    const statsResponse = await fetch(statsUrl, {
+      cache: "no-store"
+    });
+
+    if (!statsResponse.ok) {
+      throw new Error("HTTP " + statsResponse.status);
+    }
+
+    const statsData = await statsResponse.json();
+    const teamsStats = Array.isArray(statsData.response)
+      ? statsData.response : [];
+
+    const getCorners = (team, period) => {
+      const item = team?.[period]?.find(
+        s => s.type === "Corner Kicks"
+      );
+
+      if (item?.value == null || item.value === "") {
+        return "n/d";
+      }
+
+      const value = Number(item.value);
+      return Number.isFinite(value) && value >= 0
+        ? String(value) : "n/d";
+    };
+
+    for (const side of ["home", "away"]) {
+      const team = sampleMatch.teams[side];
+
+      const stats = teamsStats.find(
+        s => Number(s.team?.id) === Number(team.id)
+      );
+
+      addCornerLine(
+        (side === "home" ? "🏠 " : "✈️ ") +
+        team.name +
+        " | Corner 1T: " +
+        getCorners(stats, "statistics_1h") +
+        " | Corner 2T: " +
+        getCorners(stats, "statistics_2h")
+      );
+    }
+
+    addCornerLine(
+      "Campione di prova: 1 partita conclusa"
+    );
+
+  } catch (error) {
+    addCornerLine(
+      "⚠️ Statistiche corner non disponibili: " +
+      error.message
+    );
+  }
+    }
+    
 $("presenterSpeech").textContent +=
   strongSignal
     ? " Entrambe le statistiche superano il filtro Expert. " +
