@@ -1268,6 +1268,87 @@ async function studioCornerTotalByFixture(fixtureId) {
 
   return request;
     }
+    /* V6 STUDIO - CARTELLINI GIALLI REALI FT */
+const studioYellowCardsCache = new Map();
+
+async function studioYellowCardsByFixture(game) {
+  const id = Number(game?.fixture?.id);
+  const homeId = Number(game?.teams?.home?.id);
+  const awayId = Number(game?.teams?.away?.id);
+
+  if (
+    !Number.isInteger(id) || id <= 0 ||
+    !homeId || !awayId ||
+    !["FT", "AET", "PEN"].includes(
+      game?.fixture?.status?.short
+    )
+  ) {
+    return null;
+  }
+
+  if (studioYellowCardsCache.has(id)) {
+    return studioYellowCardsCache.get(id);
+  }
+
+  const request = (async () => {
+    try {
+      const url =
+        "https://football-stats-v3.onrender.com/api/football" +
+        "?path=%2Ffixtures%2Fstatistics&fixture=" + id;
+
+      const rows = await studioApiGet(url);
+
+      function readYellowCards(teamId) {
+        const row = rows.find(r =>
+          Number(r?.team?.id) === teamId
+        );
+
+        if (!row) return null;
+
+        const stat = (row.statistics || []).find(s =>
+          String(s?.type || "")
+            .trim().toLowerCase() === "yellow cards"
+        );
+
+        if (stat?.value == null || stat.value === "") {
+          return null;
+        }
+
+        const value = Number(stat.value);
+
+        return Number.isInteger(value) && value >= 0
+          ? value
+          : null;
+      }
+
+      const home = readYellowCards(homeId);
+      const away = readYellowCards(awayId);
+
+      // Dati incompleti: nessun esito
+      if (home === null || away === null) {
+        return null;
+      }
+
+      return {
+        home,
+        away,
+        total: home + away
+      };
+
+    } catch (error) {
+      console.warn(
+        "Cartellini gialli non disponibili:",
+        id,
+        error
+      );
+      return null;
+    }
+  })();
+
+  studioYellowCardsCache.set(id, request);
+
+  return request;
+                        }
     /* V6 STUDIO - CAMPIONE CORNER FT DA API */
 async function studioGetCornerApiCandidate(game) {
   const kickoff = Date.parse(game.fixture?.date || "");
