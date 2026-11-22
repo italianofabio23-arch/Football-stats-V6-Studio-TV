@@ -1268,6 +1268,118 @@ async function studioCornerTotalByFixture(fixtureId) {
 
   return request;
     }
+    /* V6 STUDIO - CAMPIONE CORNER FT DA API */
+async function studioGetCornerApiCandidate(game) {
+  const kickoff = Date.parse(game.fixture?.date || "");
+  const leagueId = Number(game.league?.id);
+  const season = Number(game.league?.season);
+  const homeId = Number(game.teams?.home?.id);
+  const awayId = Number(game.teams?.away?.id);
+
+  if (
+    !Number.isFinite(kickoff) ||
+    kickoff <= Date.now() ||
+    !leagueId || !season || !homeId || !awayId
+  ) return null;
+
+  const [homeGames, awayGames] = await Promise.all([
+    studioTeamGames(homeId),
+    studioTeamGames(awayId)
+  ]);
+
+  function recentFixtures(games, teamId, side) {
+    return games.filter(g =>
+      ["FT", "AET", "PEN"].includes(
+        g.fixture?.status?.short
+      ) &&
+      Number(g.league?.id) === leagueId &&
+      Number(g.league?.season) === season &&
+      Number(g.teams?.[side]?.id) === teamId &&
+      Number.isFinite(Date.parse(g.fixture?.date || "")) &&
+      Date.parse(g.fixture.date) < kickoff &&
+      kickoff - Date.parse(g.fixture.date) <=
+        366 * 86400000
+    )
+    .sort((a, b) =>
+      Date.parse(b.fixture.date) -
+      Date.parse(a.fixture.date)
+    )
+    .slice(0, 10);
+  }
+
+  const home = recentFixtures(
+    homeGames, homeId, "home"
+  );
+
+  const away = recentFixtures(
+    awayGames, awayId, "away"
+  );
+
+  if (home.length < 8 || away.length < 8) {
+    return null;
+  }
+
+  const fixtures = [...new Map(
+    [...home, ...away].map(g => [
+      Number(g.fixture.id), g
+    ])
+  ).values()];
+
+  const totals = new Map();
+
+  // Massimo quattro recuperi contemporanei
+  for (let i = 0; i < fixtures.length; i += 4) {
+    const batch = fixtures.slice(i, i + 4);
+
+    const values = await Promise.all(
+      batch.map(g =>
+        studioCornerTotalByFixture(g.fixture.id)
+      )
+    );
+
+    batch.forEach((g, index) => {
+      totals.set(Number(g.fixture.id), values[index]);
+    });
+  }
+
+  const validTotals = games => games
+    .map(g => totals.get(Number(g.fixture.id)))
+    .filter(value =>
+      Number.isInteger(value) && value >= 0
+    );
+
+  const homeTotals = validTotals(home);
+  const awayTotals = validTotals(away);
+
+  if (
+    homeTotals.length < 8 ||
+    awayTotals.length < 8
+  ) return null;
+
+  const homeHits = homeTotals.filter(
+    n => n > 7.5
+  ).length;
+
+  const awayHits = awayTotals.filter(
+    n => n > 7.5
+  ).length;
+
+  if (
+    homeHits / homeTotals.length < 0.80 ||
+    awayHits / awayTotals.length < 0.80
+  ) return null;
+
+  return {
+    game,
+    market: "TOTALE OVER 7.5 CORNER FT",
+    homeLabel: "Casa: Over 7.5 corner totali",
+    awayLabel: "Ospite: Over 7.5 corner totali",
+    homeHits,
+    homeTotal: homeTotals.length,
+    awayHits,
+    awayTotal: awayTotals.length
+  };
+    }
 /* V6 STUDIO - ANOMALIE CORNER TOTALI FT */
 function studioGetCornerFtCandidate(game) {
   const stored = readStorage(
