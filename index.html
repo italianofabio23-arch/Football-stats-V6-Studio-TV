@@ -816,6 +816,102 @@ $("crawlText").textContent =
   "ANALISI STATISTICHE REALI · " +
   "NESSUN PRONOSTICO ANCORA GENERATO";
 
+/* V6 EXPERT - CONFRONTO CASA / TRASFERTA */
+
+const awayId = match.teams.away.id;
+
+const awayUrl =
+  "https://football-stats-v3.onrender.com/api/football" +
+  "?path=%2Ffixtures" +
+  "&team=" + awayId +
+  "&last=35&status=FT";
+
+const awayResponse = await fetch(awayUrl, {
+  cache: "no-store"
+});
+
+if (!awayResponse.ok) {
+  throw new Error("Storico ospite HTTP " + awayResponse.status);
+}
+
+const awayData = await awayResponse.json();
+
+if (!Array.isArray(awayData.response)) {
+  throw new Error("Storico ospite non disponibile");
+}
+
+const sameSeason = g =>
+  Number(g.league?.season) === Number(match.league?.season);
+
+const verifiedHome = homeGames.filter(sameSeason);
+
+const awayGames = awayData.response
+  .filter(g =>
+    g.teams?.away?.id === awayId &&
+    g.league?.id === match.league?.id &&
+    sameSeason(g) &&
+    new Date(g.fixture?.date).getTime() <
+      new Date(match.fixture.date).getTime() &&
+    Number.isInteger(g.score?.halftime?.home) &&
+    Number.isInteger(g.score?.halftime?.away)
+  )
+  .sort((a, b) =>
+    new Date(b.fixture.date) - new Date(a.fixture.date)
+  )
+  .slice(0, 10);
+
+const homeHits = verifiedHome.filter(g =>
+  g.score.halftime.home >= 1
+).length;
+
+const awayHits = awayGames.filter(g =>
+  g.score.halftime.home >= 1
+).length;
+
+const homeRate = verifiedHome.length
+  ? homeHits / verifiedHome.length : 0;
+
+const awayRate = awayGames.length
+  ? awayHits / awayGames.length : 0;
+
+const strongSignal =
+  verifiedHome.length >= 8 &&
+  awayGames.length >= 8 &&
+  homeRate >= 0.80 &&
+  awayRate >= 0.80;
+
+const extra = $("screenPicks")
+  .querySelector(".screen-pick > div");
+
+const details = [
+  "📊 CONFRONTO STESSA STAGIONE",
+  "🏠 Casa segna 1T: " +
+    homeHits + "/" + verifiedHome.length,
+  "✈️ Ospite subisce 1T: " +
+    awayHits + "/" + awayGames.length,
+  strongSignal
+    ? "✅ ANOMALIA: CASA OVER 0.5 GOL 1T"
+    : "⛔ Nessun segnale forte per questo mercato",
+  "Frequenze storiche, non probabilità previste"
+];
+
+details.forEach(line => {
+  const element = document.createElement("small");
+  element.textContent = line;
+  extra.appendChild(element);
+});
+
+$("presenterSpeech").textContent +=
+  strongSignal
+    ? " Entrambe le statistiche superano il filtro Expert. " +
+      "Trovata un'anomalia storica da approfondire."
+    : " Le statistiche non superano il filtro Expert. " +
+      "Nessun pronostico approvato per questo mercato.";
+
+$("crawlText").textContent = strongSignal
+  ? "ANOMALIA GOL PRIMO TEMPO RILEVATA"
+  : "FILTRO ANTI-FALSE: SEGNALE NON SUFFICIENTE";
+    
 $("screenPicks").scrollIntoView({
   behavior: "smooth",
   block: "center"
