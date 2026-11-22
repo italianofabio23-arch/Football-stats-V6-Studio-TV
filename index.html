@@ -1134,7 +1134,246 @@ $("screenPicks").scrollIntoView({
     anomalyTestBtn.textContent = "🔎 Test API Expert";
   }
 });
-    
+    /* V6 STUDIO - SCANNER EXPERT GOL 1T */
+const studioScan = {
+  date: "",
+  games: [],
+  index: 0,
+  picks: [],
+  cache: new Map(),
+  errors: 0
+};
+
+const studioScanBtn = document.createElement("button");
+studioScanBtn.type = "button";
+studioScanBtn.className = "action primary";
+studioScanBtn.textContent = "🎯 SCANNER EXPERT GOL 1T";
+
+$("syncBtn").parentElement.appendChild(studioScanBtn);
+
+async function studioApiGet(url) {
+  const response = await fetch(url, {
+    cache: "no-store"
+  });
+
+  if (!response.ok) {
+    throw new Error("HTTP " + response.status);
+  }
+
+  const data = await response.json();
+
+  if (
+    !Array.isArray(data.response) ||
+    (data.errors && Object.keys(data.errors).length)
+  ) {
+    throw new Error("Dati API non disponibili");
+  }
+
+  return data.response;
+}
+
+async function studioTeamGames(teamId) {
+  if (studioScan.cache.has(teamId)) {
+    return studioScan.cache.get(teamId);
+  }
+
+  const url =
+    "https://football-stats-v3.onrender.com/api/football" +
+    "?path=%2Ffixtures&team=" + teamId +
+    "&last=35&status=FT";
+
+  const games = await studioApiGet(url);
+  studioScan.cache.set(teamId, games);
+  return games;
+}
+
+studioScanBtn.addEventListener("click", async () => {
+  studioScanBtn.disabled = true;
+
+  try {
+    const date = $("dateInput").value || state.date;
+
+    if (studioScan.date !== date) {
+      studioScanBtn.textContent = "⏳ Carico partite...";
+
+      const games = await studioApiGet(
+        "https://football-stats-v3.onrender.com/api/football" +
+        "?path=%2Ffixtures&date=" + encodeURIComponent(date)
+      );
+
+      const priority = new Set([
+        135, 140, 39, 78, 61, 88, 144
+      ]);
+
+      studioScan.games = games
+        .filter(g =>
+          ["NS", "TBD"].includes(g.fixture?.status?.short) &&
+          Date.parse(g.fixture?.date || "") > Date.now() &&
+          Number(g.teams?.home?.id) > 0 &&
+          Number(g.teams?.away?.id) > 0
+        )
+        .sort((a, b) =>
+          Number(priority.has(Number(b.league?.id))) -
+          Number(priority.has(Number(a.league?.id))) ||
+          Date.parse(a.fixture.date) -
+          Date.parse(b.fixture.date)
+        );
+
+      studioScan.date = date;
+      studioScan.index = 0;
+      studioScan.picks = [];
+      studioScan.errors = 0;
+      studioScan.cache.clear();
+    }
+
+    const batch = studioScan.games.slice(
+      studioScan.index,
+      studioScan.index + 6
+    );
+
+    for (const game of batch) {
+      try {
+        studioScanBtn.textContent =
+          "⏳ Analisi " + (studioScan.index + 1) +
+          "/" + studioScan.games.length;
+
+        const homeId = Number(game.teams.home.id);
+        const awayId = Number(game.teams.away.id);
+
+        const [homeHistory, awayHistory] =
+          await Promise.all([
+            studioTeamGames(homeId),
+            studioTeamGames(awayId)
+          ]);
+
+        const valid = g =>
+          Number(g.league?.id) ===
+            Number(game.league?.id) &&
+          Number(g.league?.season) ===
+            Number(game.league?.season) &&
+          Date.parse(g.fixture?.date || "") <
+            Date.parse(game.fixture?.date || "") &&
+          Number.isInteger(g.score?.halftime?.home) &&
+          Number.isInteger(g.score?.halftime?.away);
+
+        const home = homeHistory
+          .filter(g =>
+            valid(g) &&
+            Number(g.teams?.home?.id) === homeId
+          )
+          .sort((a, b) =>
+            Date.parse(b.fixture.date) -
+            Date.parse(a.fixture.date)
+          )
+          .slice(0, 10);
+
+        const away = awayHistory
+          .filter(g =>
+            valid(g) &&
+            Number(g.teams?.away?.id) === awayId
+          )
+          .sort((a, b) =>
+            Date.parse(b.fixture.date) -
+            Date.parse(a.fixture.date)
+          )
+          .slice(0, 10);
+
+        if (home.length < 8 || away.length < 8) {
+          continue;
+        }
+
+        const homeHits = home.filter(g =>
+          g.score.halftime.home >= 1
+        ).length;
+
+        const awayHits = away.filter(g =>
+          g.score.halftime.home >= 1
+        ).length;
+
+        if (
+          homeHits / home.length >= 0.80 &&
+          awayHits / away.length >= 0.80
+        ) {
+          studioScan.picks.push({
+            game,
+            homeHits,
+            homeTotal: home.length,
+            awayHits,
+            awayTotal: away.length
+          });
+        }
+
+      } catch (error) {
+        studioScan.errors++;
+        console.warn("Scanner Expert:", error);
+      } finally {
+        studioScan.index++;
+      }
+    }
+
+    $("screenDate").textContent =
+      humanDate(date).toUpperCase();
+
+    $("boardMode").textContent =
+      "SCANNER ANOMALIE EXPERT";
+
+    const picks = studioScan.picks;
+
+    $("screenPicks").innerHTML = picks.length
+      ? picks.map(p => `
+          <div class="screen-pick">
+            <div>
+              <strong>✅ ${safeString(p.game.teams.home.name)}
+                - ${safeString(p.game.teams.away.name)}
+              </strong>
+              <small>⚽ CASA OVER 0.5 GOL 1T</small>
+              <small>🏠 Casa segna:
+                ${p.homeHits}/${p.homeTotal}
+              </small>
+              <small>✈️ Ospite subisce:
+                ${p.awayHits}/${p.awayTotal}
+              </small>
+              <small>🛡️ Anomalia storica approvata</small>
+            </div>
+          </div>
+        `).join("")
+      : `<div class="empty-screen">
+           <strong>🛡️ Nessuna selezione Expert</strong>
+           <p>Nessuna anomalia approvata
+           nelle partite analizzate.</p>
+         </div>`;
+
+    $("topBadge").textContent =
+      picks.length ? "ANOMALIE EXPERT" : "NESSUNA SELEZIONE";
+
+    $("crawlText").textContent =
+      "PARTITE CONTROLLATE: " + studioScan.index +
+      "/" + studioScan.games.length +
+      " · ANOMALIE APPROVATE: " + picks.length +
+      " · ERRORI API: " + studioScan.errors;
+
+    $("presenterSpeech").textContent =
+      "🎙️ Scanner Expert: controllate " +
+      studioScan.index + " partite su " +
+      studioScan.games.length + ". " +
+      "Anomalie approvate: " + picks.length + ".";
+
+    $("screenPicks").scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+
+  } catch (error) {
+    alert("❌ Scanner Expert: " + error.message);
+  } finally {
+    studioScanBtn.disabled = false;
+    studioScanBtn.textContent =
+      studioScan.index >= studioScan.games.length &&
+      studioScan.games.length > 0
+        ? "✅ SCANSIONE COMPLETATA"
+        : "🎯 SCANNER EXPERT - ALTRE 6";
+  }
+});
     $("clearBtn").addEventListener("click",()=>{try{localStorage.removeItem(IMPORT_KEY);}catch{}state.mode="empty";state.feeds=[];renderAll();});
     $("fileInput").addEventListener("change",async(e)=>{const file=e.target.files?.[0];if(!file)return;try{if(file.size>2000000)throw Error("File troppo grande (max 2 MB)");const parsed=JSON.parse(await file.text());const feed=normalizeFeed(parsed,"IMPORTAZIONE MANUALE");if(!feed||!feed.matches.length)throw Error("Formato JSON non valido o nessuna partita riconosciuta");writeStorage(IMPORT_KEY,parsed);state.mode="live";state.feeds=[feed];renderAll();}catch(err){alert("Importazione fallita: "+err.message);}finally{e.target.value="";}});
     
