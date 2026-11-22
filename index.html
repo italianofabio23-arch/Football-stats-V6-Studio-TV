@@ -1349,10 +1349,10 @@ studioScanBtn.addEventListener("click", async () => {
                 - ${safeString(p.game.teams.away.name)}
               </strong>
               <small>⚽ ${safeString(p.market)}</small>
-              <small>🏠 Casa segna:
+                            <small>🏠 ${safeString(p.homeLabel)}:
                 ${p.homeHits}/${p.homeTotal}
               </small>
-              <small>✈️ Ospite subisce:
+              <small>✈️ ${safeString(p.awayLabel)}:
                 ${p.awayHits}/${p.awayTotal}
               </small>
               <small>🛡️ Anomalia storica approvata</small>
