@@ -2032,11 +2032,57 @@ studioScanBtn.addEventListener("click", async () => {
       );
     }
 
+        // DIAGNOSTICA CAMPIONI CARTELLINI
+    let cardSamplesReady = 0;
+    let cardMaxHome = 0;
+    let cardMaxAway = 0;
+
+    for (const fixture of checkedGames) {
+      const homeId = Number(fixture.teams?.home?.id);
+      const awayId = Number(fixture.teams?.away?.id);
+      const leagueId = Number(fixture.league?.id);
+      const season = Number(fixture.league?.season);
+      const kickoff = Date.parse(
+        fixture.fixture?.date || ""
+      );
+
+      const valid = g =>
+        g.fixture?.status?.short === "FT" &&
+        Number(g.league?.id) === leagueId &&
+        Number(g.league?.season) === season &&
+        Date.parse(g.fixture?.date || "") < kickoff;
+
+      const homeCount = (
+        studioScan.cache.get(homeId) || []
+      ).filter(g =>
+        valid(g) &&
+        Number(g.teams?.home?.id) === homeId
+      ).length;
+
+      const awayCount = (
+        studioScan.cache.get(awayId) || []
+      ).filter(g =>
+        valid(g) &&
+        Number(g.teams?.away?.id) === awayId
+      ).length;
+
+      cardMaxHome = Math.max(cardMaxHome, homeCount);
+      cardMaxAway = Math.max(cardMaxAway, awayCount);
+
+      if (homeCount >= 8 && awayCount >= 8) {
+        cardSamplesReady++;
+      }
+    }
+
     cardReport.textContent =
       "🟨 CARTELLINI FT | Test API: " +
       (studioScan.cardsApiBatch || "non avviato") +
       " | Risultati validi: " +
       cardApiValid + "/" + cardApiResults.length +
+      " | Campioni 8+8: " +
+      cardSamplesReady + "/" + checkedGames.length +
+      " | Massimo storico Casa: " + cardMaxHome +
+      " | Massimo storico Ospite: " + cardMaxAway +
       " | Anomalie approvate: " +
       picks.filter(p =>
         String(p.market || "").includes("GIALLI FT")
