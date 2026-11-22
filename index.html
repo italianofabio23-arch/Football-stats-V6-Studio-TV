@@ -1407,7 +1407,30 @@ studioScanBtn.addEventListener("click", async () => {
       } catch (error) {
         studioScan.errors++;
         console.warn("Scanner Expert:", error);
-      } finally {
+          } finally {
+        try {
+          const alreadySelected = studioScan.picks.some(p =>
+            Number(p.game?.fixture?.id) ===
+            Number(game.fixture?.id)
+          );
+
+          // Corner soltanto se non esiste già
+          // una selezione gol per la partita
+          if (!alreadySelected) {
+            const cornerPick =
+              studioGetCornerFtCandidate(game);
+
+            if (cornerPick) {
+              studioScan.picks.push(cornerPick);
+            }
+          }
+        } catch (cornerError) {
+          console.warn(
+            "Scanner Expert Corner FT:",
+            cornerError
+          );
+        }
+
         studioScan.index++;
       }
     }
