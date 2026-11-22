@@ -2008,6 +2008,39 @@ studioScanBtn.addEventListener("click", async () => {
       (studioScan.cornerApiBatch || "non avviato") +
       " | Risultati corner disponibili: " +
       cornerApiValid + "/" + cornerApiResults.length;
+        // V6 STUDIO - DIAGNOSTICA CARTELLINI FT
+    const cardApiResults = await Promise.all(
+      [...studioYellowCardsCache.values()]
+    );
+
+    const cardApiValid = cardApiResults.filter(s =>
+      s &&
+      Number.isInteger(s.home) &&
+      Number.isInteger(s.away) &&
+      Number.isInteger(s.total)
+    ).length;
+
+    let cardReport = $("studioCardReport");
+
+    if (!cardReport) {
+      cardReport = document.createElement("p");
+      cardReport.id = "studioCardReport";
+      cardReport.className = "tiny-note";
+
+      cornerReport.insertAdjacentElement(
+        "afterend", cardReport
+      );
+    }
+
+    cardReport.textContent =
+      "🟨 CARTELLINI FT | Test API: " +
+      (studioScan.cardsApiBatch || "non avviato") +
+      " | Risultati validi: " +
+      cardApiValid + "/" + cardApiResults.length +
+      " | Anomalie approvate: " +
+      picks.filter(p =>
+        String(p.market || "").includes("GIALLI FT")
+      ).length;
     $("screenPicks").innerHTML = picks.length
       ? picks.map(p => `
           <div class="screen-pick">
