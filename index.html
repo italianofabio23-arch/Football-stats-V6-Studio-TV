@@ -1282,25 +1282,37 @@ studioScanBtn.addEventListener("click", async () => {
           continue;
         }
 
-        const homeHits = home.filter(g =>
-          g.score.halftime.home >= 1
-        ).length;
+                // V6 EXPERT - DUE MERCATI GOL CASA 1T
+        const marketRules = [
+          { goals: 2, label: "CASA OVER 1.5 GOL 1T" },
+          { goals: 1, label: "CASA OVER 0.5 GOL 1T" }
+        ];
 
-        const awayHits = away.filter(g =>
-          g.score.halftime.home >= 1
-        ).length;
+        for (const rule of marketRules) {
+          const homeHits = home.filter(g =>
+            g.score.halftime.home >= rule.goals
+          ).length;
 
-        if (
-          homeHits / home.length >= 0.80 &&
-          awayHits / away.length >= 0.80
-        ) {
-          studioScan.picks.push({
-            game,
-            homeHits,
-            homeTotal: home.length,
-            awayHits,
-            awayTotal: away.length
-          });
+          const awayHits = away.filter(g =>
+            g.score.halftime.home >= rule.goals
+          ).length;
+
+          if (
+            homeHits / home.length >= 0.80 &&
+            awayHits / away.length >= 0.80
+          ) {
+            studioScan.picks.push({
+              game,
+              market: rule.label,
+              homeHits,
+              homeTotal: home.length,
+              awayHits,
+              awayTotal: away.length
+            });
+
+            // Una sola selezione per partita
+            break;
+          }
         }
 
       } catch (error) {
@@ -1326,7 +1338,7 @@ studioScanBtn.addEventListener("click", async () => {
               <strong>✅ ${safeString(p.game.teams.home.name)}
                 - ${safeString(p.game.teams.away.name)}
               </strong>
-              <small>⚽ CASA OVER 0.5 GOL 1T</small>
+              <small>⚽ ${safeString(p.market)}</small>
               <small>🏠 Casa segna:
                 ${p.homeHits}/${p.homeTotal}
               </small>
