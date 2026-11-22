@@ -764,19 +764,63 @@ const scored1T = homeGames.filter(g =>
 const conceded1T = homeGames.filter(g =>
   g.score.halftime.away >= 1
 ).length;
+    
+/* V6 STUDIO - RISULTATI API SUL TABELLONE */
 
-alert(
-  "✅ TEST STORICO EXPERT\n" +
-  "Partita: " + match.teams.home.name +
-  " - " + match.teams.away.name + "\n" +
-  "Campionato: " + match.league.name + "\n" +
-  "Campione casa: " + total + "/10\n" +
-  "Gol segnato 1T: " + scored1T + "/" + total + "\n" +
-  "Gol subito 1T: " + conceded1T + "/" + total + "\n" +
-  (total < 6
-    ? "⚠️ Campione insufficiente"
-    : "✅ Campione minimo raggiunto")
-);
+$("screenDate").textContent =
+  humanDate(date).toUpperCase();
+
+$("boardMode").textContent =
+  "TEST ANOMALIE EXPERT";
+
+$("screenPicks").innerHTML = `
+  <div class="screen-pick">
+    <div>
+      <strong>🔎 ${safeString(match.teams.home.name)}
+      - ${safeString(match.teams.away.name)}</strong>
+
+      <small>🏆 ${safeString(match.league.name)}</small>
+
+      <small>🏠 Partite in casa: ${total}/10</small>
+
+      <small>⚽ Gol segnato 1T:
+      ${scored1T}/${total}</small>
+
+      <small>🥅 Gol subito 1T:
+      ${conceded1T}/${total}</small>
+
+      <small>${total < 6
+        ? "⚠️ Campione insufficiente"
+        : "✅ Campione minimo raggiunto"}</small>
+
+      <small>📊 Dati storici reali,
+      non pronostici</small>
+    </div>
+  </div>
+`;
+
+$("presenterSpeech").textContent =
+  "🎙️ Analisi Expert API. " +
+  match.teams.home.name +
+  " contro " + match.teams.away.name +
+  ". Analizzate " + total +
+  " partite casalinghe. " +
+  "Gol segnato nel primo tempo in " +
+  scored1T + " occasioni. " +
+  "Gol subito nel primo tempo in " +
+  conceded1T + " occasioni.";
+
+$("crawlLabel").textContent = "API EXPERT";
+
+$("crawlText").textContent =
+  "ANALISI STATISTICHE REALI · " +
+  "NESSUN PRONOSTICO ANCORA GENERATO";
+
+$("screenPicks").scrollIntoView({
+  behavior: "smooth",
+  block: "center"
+});
+  
   
 
   } catch (error) {
