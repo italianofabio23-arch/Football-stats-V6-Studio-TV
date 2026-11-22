@@ -1186,7 +1186,86 @@ async function studioTeamGames(teamId) {
   studioScan.cache.set(teamId, games);
   return games;
 }
+/* V6 STUDIO - ANOMALIE CORNER TOTALI FT */
+function studioGetCornerFtCandidate(game) {
+  const stored = readStorage(
+    "corner_cards_prediction_history_v1"
+  );
 
+  if (!Array.isArray(stored)) return null;
+
+  const kickoff = Date.parse(game.fixture?.date || "");
+
+  if (
+    !Number.isFinite(kickoff) ||
+    kickoff <= Date.now()
+  ) return null;
+
+  const norm = value =>
+    String(value || "").trim().toLowerCase();
+
+  const league = norm(game.league?.name);
+
+  // Solo statistiche di partite realmente concluse
+  const historical = stored.filter(item => {
+    const played = Date.parse(item.date || "");
+    const corners = Number(item.result);
+
+    return item.source === "historical-backfill" &&
+      item.status === "settled" &&
+      item.type === "corner" &&
+      Number(item.line) === 7.5 &&
+      item.result != null &&
+      Number.isInteger(corners) &&
+      corners >= 0 &&
+      Number.isFinite(played) &&
+      played < kickoff &&
+      kickoff - played <= 366 * 86400000 &&
+      norm(item.league) === league;
+  });
+
+  const recent = values => values
+    .sort((a, b) =>
+      Date.parse(b.date) - Date.parse(a.date)
+    )
+    .slice(0, 10);
+
+  const home = recent(historical.filter(item =>
+    norm(item.home) === norm(game.teams?.home?.name)
+  ));
+
+  const away = recent(historical.filter(item =>
+    norm(item.away) === norm(game.teams?.away?.name)
+  ));
+
+  if (home.length < 8 || away.length < 8) {
+    return null;
+  }
+
+  const homeHits = home.filter(item =>
+    Number(item.result) > 7.5
+  ).length;
+
+  const awayHits = away.filter(item =>
+    Number(item.result) > 7.5
+  ).length;
+
+  if (
+    homeHits / home.length < 0.80 ||
+    awayHits / away.length < 0.80
+  ) return null;
+
+  return {
+    game,
+    market: "TOTALE OVER 7.5 CORNER FT",
+    homeLabel: "Casa: Over 7.5 corner totali",
+    awayLabel: "Ospite: Over 7.5 corner totali",
+    homeHits,
+    homeTotal: home.length,
+    awayHits,
+    awayTotal: away.length
+  };
+    }
 studioScanBtn.addEventListener("click", async () => {
   studioScanBtn.disabled = true;
 
