@@ -1348,7 +1348,155 @@ async function studioYellowCardsByFixture(game) {
   studioYellowCardsCache.set(id, request);
 
   return request;
-                        }
+       /* V6 STUDIO - ANOMALIE CARTELLINI GIALLI FT */
+async function studioGetYellowCardCandidate(game) {
+  const kickoff = Date.parse(game.fixture?.date || "");
+  const leagueId = Number(game.league?.id);
+  const season = Number(game.league?.season);
+  const homeId = Number(game.teams?.home?.id);
+  const awayId = Number(game.teams?.away?.id);
+
+  if (
+    !Number.isFinite(kickoff) ||
+    kickoff <= Date.now() ||
+    !leagueId || !season || !homeId || !awayId
+  ) return null;
+
+  const [homeGames, awayGames] = await Promise.all([
+    studioTeamGames(homeId),
+    studioTeamGames(awayId)
+  ]);
+
+  function recentGames(games, teamId, side) {
+    return games.filter(g =>
+      g.fixture?.status?.short === "FT" &&
+      Number(g.league?.id) === leagueId &&
+      Number(g.league?.season) === season &&
+      Number(g.teams?.[side]?.id) === teamId &&
+      Number.isFinite(Date.parse(g.fixture?.date || "")) &&
+      Date.parse(g.fixture.date) < kickoff
+    )
+    .sort((a, b) =>
+      Date.parse(b.fixture.date) -
+      Date.parse(a.fixture.date)
+    )
+    .slice(0, 10);
+  }
+
+  const home = recentGames(
+    homeGames, homeId, "home"
+  );
+
+  const away = recentGames(
+    awayGames, awayId, "away"
+  );
+
+  if (home.length < 8 || away.length < 8) {
+    return null;
+  }
+
+  const fixtures = [...new Map(
+    [...home, ...away].map(g => [
+      Number(g.fixture.id), g
+    ])
+  ).values()];
+
+  const cardResults = new Map();
+
+  // Recupero controllato, quattro partite per volta
+  for (let i = 0; i < fixtures.length; i += 4) {
+    const batch = fixtures.slice(i, i + 4);
+
+    const values = await Promise.all(
+      batch.map(g => studioYellowCardsByFixture(g))
+    );
+
+    batch.forEach((g, index) => {
+      cardResults.set(
+        Number(g.fixture.id),
+        values[index]
+      );
+    });
+  }
+
+  const validStats = games => games
+    .map(g => cardResults.get(Number(g.fixture.id)))
+    .filter(s =>
+      s &&
+      Number.isInteger(s.home) &&
+      Number.isInteger(s.away) &&
+      Number.isInteger(s.total)
+    );
+
+  const homeStats = validStats(home);
+  const awayStats = validStats(away);
+
+  if (
+    homeStats.length < 8 ||
+    awayStats.length < 8
+  ) return null;
+
+  const rules = [
+    {
+      key: "total", line: 4.5,
+      label: "TOTALE OVER 4.5 GIALLI FT"
+    },
+    {
+      key: "total", line: 3.5,
+      label: "TOTALE OVER 3.5 GIALLI FT"
+    },
+    {
+      key: "home", line: 2.5,
+      label: "CASA OVER 2.5 GIALLI FT"
+    },
+    {
+      key: "away", line: 2.5,
+      label: "OSPITE OVER 2.5 GIALLI FT"
+    },
+    {
+      key: "home", line: 1.5,
+      label: "CASA OVER 1.5 GIALLI FT"
+    },
+    {
+      key: "away", line: 1.5,
+      label: "OSPITE OVER 1.5 GIALLI FT"
+    }
+  ];
+
+  for (const rule of rules) {
+    const homeHits = homeStats.filter(s =>
+      s[rule.key] > rule.line
+    ).length;
+
+    const awayHits = awayStats.filter(s =>
+      s[rule.key] > rule.line
+    ).length;
+
+    if (
+      homeHits / homeStats.length >= 0.80 &&
+      awayHits / awayStats.length >= 0.80
+    ) {
+      return {
+        game,
+        market: rule.label,
+        homeLabel:
+          rule.key === "total" ? "Totale gialli in casa" :
+          rule.key === "home" ? "Casa ammonita" :
+          "Avversarie della casa ammonite",
+        awayLabel:
+          rule.key === "total" ? "Totale gialli in trasferta" :
+          rule.key === "away" ? "Ospite ammonita" :
+          "Avversarie dell'ospite ammonite",
+        homeHits,
+        homeTotal: homeStats.length,
+        awayHits,
+        awayTotal: awayStats.length
+      };
+    }
+  }
+
+  return null;
+}                 }
     /* V6 STUDIO - CAMPIONE CORNER FT DA API */
 async function studioGetCornerApiCandidate(game) {
   const kickoff = Date.parse(game.fixture?.date || "");
