@@ -1610,14 +1610,30 @@ studioScanBtn.addEventListener("click", async () => {
 
           // Corner soltanto se non esiste già
           // una selezione gol per la partita
-          if (!alreadySelected) {
-            const cornerPick =
+                    if (!alreadySelected) {
+            let cornerPick =
               studioGetCornerFtCandidate(game);
+
+            // Prova l'API al massimo su una partita
+            // per ogni blocco di 6 incontri
+            const batchKey =
+              studioScan.date + "|" +
+              Math.floor(studioScan.index / 6);
+
+            if (
+              !cornerPick &&
+              studioScan.cornerApiBatch !== batchKey
+            ) {
+              studioScan.cornerApiBatch = batchKey;
+
+              cornerPick =
+                await studioGetCornerApiCandidate(game);
+            }
 
             if (cornerPick) {
               studioScan.picks.push(cornerPick);
             }
-          }
+                    }
         } catch (cornerError) {
           console.warn(
             "Scanner Expert Corner FT:",
