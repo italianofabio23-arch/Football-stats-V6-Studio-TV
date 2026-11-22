@@ -667,6 +667,62 @@ el.querySelectorAll(".screen-pick").forEach((card, i) => {
     $("presenterSelect").addEventListener("change",e=>{state.presenter=e.target.value;renderControls();});
     $("demoBtn").addEventListener("click",()=>{state.mode="demo";state.feeds=pickFeeds([demoFeed()]);renderAll();});
     $("syncBtn").addEventListener("click",()=>{sync();});
+    
+/* V6 STUDIO - TEST API ANOMALIE EXPERT */
+const anomalyTestBtn = document.createElement("button");
+anomalyTestBtn.type = "button";
+anomalyTestBtn.className = "action";
+anomalyTestBtn.textContent = "🔎 Test API Expert";
+
+$("syncBtn").parentElement.appendChild(anomalyTestBtn);
+
+anomalyTestBtn.addEventListener("click", async () => {
+  anomalyTestBtn.disabled = true;
+  anomalyTestBtn.textContent = "⏳ Controllo API...";
+
+  try {
+    const date = $("dateInput").value || state.date;
+
+    const url =
+      "https://football-stats-v3.onrender.com/api/football" +
+      "?path=%2Ffixtures&date=" + encodeURIComponent(date);
+
+    const response = await fetch(url, {
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data.response)) {
+      throw new Error("Risposta API non valida");
+    }
+
+    const games = data.response;
+
+    const upcoming = games.filter(game =>
+      ["NS", "TBD"].includes(game.fixture?.status?.short)
+    );
+
+    alert(
+      "✅ API EXPERT ATTIVA\n" +
+      "Data: " + date + "\n" +
+      "Partite ricevute: " + games.length + "\n" +
+      "Da giocare: " + upcoming.length
+    );
+
+  } catch (error) {
+    alert("❌ Errore collegamento API: " + error.message);
+
+  } finally {
+    anomalyTestBtn.disabled = false;
+    anomalyTestBtn.textContent = "🔎 Test API Expert";
+  }
+});
+    
     $("clearBtn").addEventListener("click",()=>{try{localStorage.removeItem(IMPORT_KEY);}catch{}state.mode="empty";state.feeds=[];renderAll();});
     $("fileInput").addEventListener("change",async(e)=>{const file=e.target.files?.[0];if(!file)return;try{if(file.size>2000000)throw Error("File troppo grande (max 2 MB)");const parsed=JSON.parse(await file.text());const feed=normalizeFeed(parsed,"IMPORTAZIONE MANUALE");if(!feed||!feed.matches.length)throw Error("Formato JSON non valido o nessuna partita riconosciuta");writeStorage(IMPORT_KEY,parsed);state.mode="live";state.feeds=[feed];renderAll();}catch(err){alert("Importazione fallita: "+err.message);}finally{e.target.value="";}});
     
