@@ -939,6 +939,30 @@ if (!sampleMatch?.fixture?.id) {
 
 const firstTeamStats = teamsStats[0];
 
+/* V6 EXPERT - CONTROLLO PARAMETRO HALF */
+
+const probeUrl = statsUrl.replace(
+  "&half=true",
+  "&half=VALORE_NON_VALIDO"
+);
+
+const probeResponse = await fetch(probeUrl, {
+  cache: "no-store"
+});
+
+const probeData = await probeResponse.json();
+
+addCornerLine(
+  "🔬 Test inoltro HALF - HTTP: " +
+  probeResponse.status
+);
+
+addCornerLine(
+  "🔬 Risposta controllo HALF: " +
+  JSON.stringify(probeData.errors ?? [])
+    .slice(0, 180)
+);
+  
 const apiErrors = JSON.stringify(statsData.errors || []);
 
 addCornerLine(
