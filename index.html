@@ -1726,6 +1726,14 @@ studioScanBtn.addEventListener("click", async () => {
       );
     }
 
+        const cornerApiResults = await Promise.all(
+      [...studioCornerStatsCache.values()]
+    );
+
+    const cornerApiValid = cornerApiResults.filter(
+      value => Number.isInteger(value) && value >= 0
+    ).length;
+
     cornerReport.textContent =
       "🚩 CORNER FT | Storici reali Over 7.5: " +
       cornerHistory.length +
@@ -1736,7 +1744,11 @@ studioScanBtn.addEventListener("click", async () => {
       " | Corner approvati: " +
       picks.filter(p =>
         p.market === "TOTALE OVER 7.5 CORNER FT"
-      ).length;
+      ).length +
+      " | Test API: " +
+      (studioScan.cornerApiBatch || "non avviato") +
+      " | Risultati corner disponibili: " +
+      cornerApiValid + "/" + cornerApiResults.length;
     $("screenPicks").innerHTML = picks.length
       ? picks.map(p => `
           <div class="screen-pick">
