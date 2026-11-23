@@ -1910,10 +1910,39 @@ async function studioGetH2HHistory(game) {
 
   try {
     fixtures = await studioH2HCache.get(key);
-  } catch (error) {
+    } catch (error) {
     studioH2HCache.delete(key);
-    console.warn("Storico H2H non disponibile:", error);
-    return null;
+
+    console.warn(
+      "API H2H non disponibile, uso storico squadre:",
+      error
+    );
+
+    const homeGames =
+      studioScan.cache.get(homeId);
+
+    const awayGames =
+      studioScan.cache.get(awayId);
+
+    const cached = [
+      ...(Array.isArray(homeGames) ? homeGames : []),
+      ...(Array.isArray(awayGames) ? awayGames : [])
+    ];
+
+    if (!cached.length) {
+      return null;
+    }
+
+    // Elimina i duplicati mantenendo gli ID reali
+    fixtures = [...new Map(
+      cached
+        .filter(g =>
+          Number(g?.fixture?.id) > 0
+        )
+        .map(g => [
+          Number(g.fixture.id), g
+        ])
+    ).values()];
   }
 
   // Soltanto risultati conclusi prima della partita
