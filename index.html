@@ -1943,6 +1943,25 @@ async function studioGetH2HHistory(game) {
           Number(g.fixture.id), g
         ])
     ).values()];
+        // Diagnosi: il recupero recente non contiene H2H
+    const foundH2H = fixtures.some(g => {
+      const h = Number(g?.teams?.home?.id);
+      const a = Number(g?.teams?.away?.id);
+
+      return (
+        (h === homeId && a === awayId) ||
+        (h === awayId && a === homeId)
+      );
+    });
+
+    if (!foundH2H) {
+      throw new Error(
+        "API H2H: " +
+        (error?.message || "non disponibile") +
+        " | Nessun precedente nello storico recente " +
+        "delle squadre. H2H non valutabile."
+      );
+    }
   }
 
   // Soltanto risultati conclusi prima della partita
