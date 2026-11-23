@@ -2541,7 +2541,17 @@ studioScanBtn.addEventListener("click", async () => {
       studioScan.index + " partite su " +
       studioScan.games.length + ". " +
       "Anomalie rilevate: " + picks.length + ".";
-
+    // V6 STUDIO - VERIFICA AUTOMATICA ARBITRI
+    if (
+      studioScan.games.length > 0 &&
+      studioScan.index >= studioScan.games.length &&
+      studioScan.picks.some(p =>
+        String(p.market || "").includes("GIALLI FT")
+      ) &&
+      !studioRefereeBtn.disabled
+    ) {
+      studioRefereeBtn.click();
+      }
     $("screenPicks").scrollIntoView({
       behavior: "smooth",
       block: "center"
