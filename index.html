@@ -1946,6 +1946,83 @@ async function studioGetH2HHistory(game) {
     sampleSize: matches.length
   };
     }
+    /* V6 STUDIO - TEST SCONTRI DIRETTI REALI */
+const studioH2HBtn = document.createElement("button");
+studioH2HBtn.type = "button";
+studioH2HBtn.className = "action";
+studioH2HBtn.textContent = "🔎 TEST SCONTRI DIRETTI";
+
+studioRefereeBtn.insertAdjacentElement(
+  "afterend", studioH2HBtn
+);
+
+const studioH2HReport = document.createElement("p");
+studioH2HReport.className = "tiny-note";
+
+studioH2HBtn.insertAdjacentElement(
+  "afterend", studioH2HReport
+);
+
+studioH2HBtn.addEventListener("click", async () => {
+  studioH2HBtn.disabled = true;
+  studioH2HBtn.textContent = "⏳ Verifica H2H...";
+
+  try {
+    const game =
+      studioScan.picks[0]?.game ||
+      studioScan.games.find(g =>
+        Date.parse(g.fixture?.date || "") > Date.now()
+      );
+
+    if (!game) {
+      studioH2HReport.textContent =
+        "⚠️ Nessuna partita disponibile. " +
+        "Avvia prima lo Scanner Expert.";
+      return;
+    }
+
+    const match =
+      game.teams.home.name + " - " +
+      game.teams.away.name;
+
+    const history = await studioGetH2HHistory(game);
+
+    if (!history) {
+      studioH2HReport.textContent =
+        "⚠️ " + match +
+        " | Storico H2H non disponibile.";
+      return;
+    }
+
+    const scores = history.matches.slice(0, 3)
+      .map(g =>
+        g.teams.home.name + " " +
+        (g.goals?.home ?? "?") + "-" +
+        (g.goals?.away ?? "?") + " " +
+        g.teams.away.name
+      );
+
+    studioH2HReport.style.whiteSpace = "pre-line";
+
+    studioH2HReport.textContent =
+      "🔎 " + match +
+      "\nPrecedenti reali: " + history.sampleSize +
+      "\nUltimi risultati:\n" +
+      (scores.join("\n") || "Nessuno disponibile") +
+      "\n" +
+      (history.sampleSize < 5
+        ? "⚠️ Campione H2H limitato"
+        : "✅ Campione minimo H2H raggiunto");
+
+  } catch (error) {
+    studioH2HReport.textContent =
+      "❌ Test H2H: " + error.message;
+  } finally {
+    studioH2HBtn.disabled = false;
+    studioH2HBtn.textContent =
+      "🔎 TEST SCONTRI DIRETTI";
+  }
+});
     /* V6 STUDIO - CAMPIONE CORNER FT DA API */
 async function studioGetCornerApiCandidate(game) {
   const kickoff = Date.parse(game.fixture?.date || "");
