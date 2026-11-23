@@ -2445,7 +2445,7 @@ studioScanBtn.addEventListener("click", async () => {
       ? picks.map(p => `
           <div class="screen-pick">
             <div>
-              <strong>✅ ${safeString(p.game.teams.home.name)}
+              <strong>${String(p.market || "").includes("GIALLI FT") ? "🟡" : "✅"} ${safeString(p.game.teams.home.name)}
                 - ${safeString(p.game.teams.away.name)}
               </strong>
               <small>⚽ ${safeString(p.market)}</small>
