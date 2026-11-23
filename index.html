@@ -1810,7 +1810,55 @@ studioRefereeBtn.addEventListener("click", async () => {
     studioRefereeReport.style.whiteSpace = "pre-line";
     studioRefereeReport.textContent =
       reports.join("\n\n");
+    // AGGIORNA IL TABELLONE CON LA VERIFICA ARBITRO
+    const pickCards = document.querySelectorAll(
+      "#screenPicks .screen-pick"
+    );
 
+    studioScan.picks.forEach((pick, index) => {
+      if (
+        !String(pick.market || "").includes("GIALLI FT")
+      ) return;
+
+      const card = pickCards[index];
+      if (!card) return;
+
+      const confirmed =
+        pick.refereeCheck?.status === "confirmed";
+
+      const heading = card.querySelector("strong");
+      const labels = card.querySelectorAll("small");
+      const statusLabel = labels[labels.length - 1];
+
+      if (heading) {
+        heading.textContent =
+          (confirmed ? "✅ " : "🟡 ") +
+          pick.game.teams.home.name + " - " +
+          pick.game.teams.away.name;
+      }
+
+      if (statusLabel) {
+        const info = pick.refereeCheck;
+
+        if (confirmed) {
+          statusLabel.textContent =
+            "✅ Conferma statistica arbitro: " +
+            info.referee + " | " +
+            (info.rate * 100).toFixed(1) + "%" +
+            " su " + info.sample + " partite";
+
+        } else if (info?.status === "rejected") {
+          statusLabel.textContent =
+            "🟡 Arbitro non conferma il mercato: " +
+            (info.rate * 100).toFixed(1) + "%";
+
+        } else {
+          statusLabel.textContent =
+            "🟡 Anomalia squadre - " +
+            "Arbitro non confermato";
+        }
+      }
+    });
   } catch (error) {
     studioRefereeReport.textContent =
       "❌ Test arbitri: " + error.message;
