@@ -1774,7 +1774,17 @@ studioRefereeBtn.addEventListener("click", async () => {
           : refereeRate >= 0.80
             ? "✅ Conferma statistica arbitro"
             : "🟡 Arbitro non conferma il mercato";
-
+        // Risultato arbitro associato alla selezione
+        pick.refereeCheck = {
+          status: !validRate
+            ? "unavailable"
+            : refereeRate >= 0.80
+              ? "confirmed"
+              : "rejected",
+          referee: profile.referee,
+          sample: profile.sample,
+          rate: validRate ? refereeRate : null
+        };
         reports.push(
           "⚖️ " + match +
           " | Arbitro: " + profile.referee +
