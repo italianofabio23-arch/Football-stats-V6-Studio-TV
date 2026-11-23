@@ -1497,7 +1497,95 @@ async function studioGetYellowCardCandidate(game) {
   }
 
   return null;
-}                 
+}        
+    /* V6 STUDIO - STORICO ARBITRI EXPERT */
+const studioRefereeCache = new Map();
+
+function studioNormalizeReferee(name) {
+  return String(name || "")
+    .split(",")[0]
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+async function studioGetRefereeHistory(game) {
+  const referee = String(
+    game?.fixture?.referee || ""
+  ).trim();
+
+  const refereeKey =
+    studioNormalizeReferee(referee);
+
+  const leagueId = Number(game?.league?.id);
+  const season = Number(game?.league?.season);
+  const kickoff = Date.parse(
+    game?.fixture?.date || ""
+  );
+
+  // Senza arbitro assegnato non si analizza
+  if (
+    !refereeKey ||
+    !leagueId ||
+    !season ||
+    !Number.isFinite(kickoff)
+  ) {
+    return null;
+  }
+
+  const cacheKey = leagueId + "|" + season;
+
+  if (!studioRefereeCache.has(cacheKey)) {
+    const url =
+      "https://football-stats-v3.onrender.com/api/football" +
+      "?path=%2Ffixtures" +
+      "&league=" + leagueId +
+      "&season=" + season +
+      "&status=FT";
+
+    studioRefereeCache.set(
+      cacheKey,
+      studioApiGet(url)
+    );
+  }
+
+  let fixtures;
+
+  try {
+    fixtures = await studioRefereeCache.get(
+      cacheKey
+    );
+  } catch (error) {
+    studioRefereeCache.delete(cacheKey);
+    throw error;
+  }
+
+  const matches = fixtures
+    .filter(g =>
+      studioNormalizeReferee(
+        g.fixture?.referee
+      ) === refereeKey &&
+      g.fixture?.status?.short === "FT" &&
+      Number.isFinite(
+        Date.parse(g.fixture?.date || "")
+      ) &&
+      Date.parse(g.fixture.date) < kickoff
+    )
+    .sort((a, b) =>
+      Date.parse(b.fixture.date) -
+      Date.parse(a.fixture.date)
+    )
+    .slice(0, 12);
+
+  return {
+    referee,
+    matches,
+    sampleSize: matches.length,
+    sufficient: matches.length >= 6
+  };
+  }
     /* V6 STUDIO - CAMPIONE CORNER FT DA API */
 async function studioGetCornerApiCandidate(game) {
   const kickoff = Date.parse(game.fixture?.date || "");
