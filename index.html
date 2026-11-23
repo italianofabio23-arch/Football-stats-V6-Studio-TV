@@ -1648,7 +1648,23 @@ async function studioGetRefereeYellowProfile(game) {
   ).length;
 
   const n = results.length;
+  // Frequenze dell'arbitro per ogni mercato
+  const marketRates = {
+    "TOTALE OVER 4.5 GIALLI FT": over45 / n,
+    "TOTALE OVER 3.5 GIALLI FT": over35 / n,
 
+    "CASA OVER 2.5 GIALLI FT":
+      results.filter(s => s.home >= 3).length / n,
+
+    "CASA OVER 1.5 GIALLI FT":
+      results.filter(s => s.home >= 2).length / n,
+
+    "OSPITE OVER 2.5 GIALLI FT":
+      results.filter(s => s.away >= 3).length / n,
+
+    "OSPITE OVER 1.5 GIALLI FT":
+      results.filter(s => s.away >= 2).length / n
+  };
   return {
     referee: history.referee,
     sample: n,
