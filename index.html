@@ -1684,68 +1684,94 @@ studioRefereeBtn.insertAdjacentElement(
 
 studioRefereeBtn.addEventListener("click", async () => {
   studioRefereeBtn.disabled = true;
-  studioRefereeBtn.textContent = "⏳ Controllo arbitro...";
+  studioRefereeBtn.textContent = "⏳ Verifica arbitri...";
 
   try {
-    const games = studioScan.games.filter(g =>
-      Date.parse(g.fixture?.date || "") > Date.now()
-    );
+    const picks = studioScan.picks
+      .filter(p =>
+        String(p.market || "").includes("GIALLI FT")
+      )
+      .slice(0, 2);
 
-    const game = games.find(g =>
-      studioNormalizeReferee(g.fixture?.referee)
-    );
-
-    if (!game) {
+    if (!picks.length) {
       studioRefereeReport.textContent =
-        "⚠️ Nessun arbitro assegnato nelle partite " +
-        "caricate. Prova un'altra data.";
+        "⚠️ Nessuna selezione cartellini da verificare.";
       return;
     }
 
-    const history = await studioGetRefereeHistory(game);
+    const reports = [];
 
-    if (!history) {
-      studioRefereeReport.textContent =
-        "⚠️ Storico arbitro non disponibile.";
-      return;
+    for (const pick of picks) {
+      const game = pick.game;
+      const match =
+        game.teams.home.name + " - " +
+        game.teams.away.name;
+
+      const referee = String(
+        game.fixture?.referee || ""
+      ).trim();
+
+      if (!referee) {
+        reports.push(
+          "⚖️ " + match +
+          " | Arbitro non ancora assegnato"
+        );
+        continue;
+      }
+
+      try {
+        const history =
+          await studioGetRefereeHistory(game);
+
+        if (!history || history.sampleSize < 8) {
+          reports.push(
+            "⚖️ " + match +
+            " | Arbitro: " + referee +
+            " | Precedenti: " +
+            (history?.sampleSize ?? 0) +
+            "/8 | Campione insufficiente"
+          );
+          continue;
+        }
+
+        const profile =
+          await studioGetRefereeYellowProfile(game);
+
+        if (!profile) {
+          reports.push(
+            "⚖️ " + match +
+            " | Statistiche gialli insufficienti"
+          );
+          continue;
+        }
+
+        reports.push(
+          "⚖️ " + match +
+          " | Arbitro: " + profile.referee +
+          " | Gare: " + profile.sample +
+          " | Media gialli: " + profile.averageTotal +
+          " | Casa: " + profile.averageHome +
+          " | Ospite: " + profile.averageAway +
+          " | Over 3.5: " + profile.over35Percent + "%" +
+          " | Over 4.5: " + profile.over45Percent + "%"
+        );
+
+      } catch (error) {
+        reports.push(
+          "⚠️ " + match +
+          " | Verifica non riuscita: " +
+          error.message
+        );
+      }
     }
 
-    const matchName =
-      game.teams.home.name + " - " +
-      game.teams.away.name;
-
-    if (history.sampleSize < 8) {
-      studioRefereeReport.textContent =
-        "⚖️ " + matchName +
-        " | Arbitro: " + history.referee +
-        " | Precedenti: " + history.sampleSize +
-        "/8 | Campione insufficiente";
-      return;
-    }
-
-    const profile =
-      await studioGetRefereeYellowProfile(game);
-
-    if (!profile) {
-      studioRefereeReport.textContent =
-        "⚖️ " + history.referee +
-        " | Statistiche gialli insufficienti";
-      return;
-    }
-
+    studioRefereeReport.style.whiteSpace = "pre-line";
     studioRefereeReport.textContent =
-      "⚖️ " + matchName +
-      " | Arbitro: " + profile.referee +
-      " | Gare: " + profile.sample +
-      " | Media gialli: " + profile.averageTotal +
-      " | Casa: " + profile.averageHome +
-      " | Ospite: " + profile.averageAway +
-      " | Over 3.5: " + profile.over35Percent + "%" +
-      " | Over 4.5: " + profile.over45Percent + "%";
+      reports.join("\n\n");
 
   } catch (error) {
     studioRefereeReport.textContent =
-      "❌ Test arbitro: " + error.message;
+      "❌ Test arbitri: " + error.message;
   } finally {
     studioRefereeBtn.disabled = false;
     studioRefereeBtn.textContent =
