@@ -2423,7 +2423,11 @@ studioScanBtn.addEventListener("click", async () => {
               <small>✈️ ${safeString(p.awayLabel)}:
                 ${p.awayHits}/${p.awayTotal}
               </small>
-              <small>🛡️ Anomalia storica approvata</small>
+                            <small>${
+                String(p.market || "").includes("GIALLI FT")
+                  ? "🟡 Anomalia squadre rilevata - Arbitro da confermare"
+                  : "🛡️ Anomalia storica approvata"
+              }</small>
             </div>
           </div>
         `).join("")
