@@ -1762,15 +1762,30 @@ studioRefereeBtn.addEventListener("click", async () => {
           continue;
         }
 
+                // Confronto con il mercato esatto
+        const refereeRate =
+          profile.marketRates?.[pick.market];
+
+        const validRate =
+          Number.isFinite(refereeRate);
+
+        const verdict = !validRate
+          ? "⚪ Mercato non valutabile"
+          : refereeRate >= 0.80
+            ? "✅ Conferma statistica arbitro"
+            : "🟡 Arbitro non conferma il mercato";
+
         reports.push(
           "⚖️ " + match +
           " | Arbitro: " + profile.referee +
           " | Gare: " + profile.sample +
           " | Media gialli: " + profile.averageTotal +
-          " | Casa: " + profile.averageHome +
-          " | Ospite: " + profile.averageAway +
-          " | Over 3.5: " + profile.over35Percent + "%" +
-          " | Over 4.5: " + profile.over45Percent + "%"
+          " | Mercato: " + pick.market +
+          " | Frequenza arbitro: " +
+          (validRate
+            ? (refereeRate * 100).toFixed(1) + "%"
+            : "non disponibile") +
+          " | " + verdict
         );
 
       } catch (error) {
