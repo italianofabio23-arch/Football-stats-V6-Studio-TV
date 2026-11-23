@@ -1920,7 +1920,17 @@ async function studioGetH2HHistory(game) {
           JSON.stringify(data.errors).slice(0, 250)
         );
       }
+      // Mostra il vero errore restituito dal proxy
+      if (data?.error != null) {
+        const detail =
+          typeof data.error === "string"
+            ? data.error
+            : JSON.stringify(data.error);
 
+        throw new Error(
+          "Proxy H2H: " + String(detail).slice(0, 300)
+        );
+      }
       if (!Array.isArray(data?.response)) {
         throw new Error(
           "Formato H2H inatteso | Campi: " +
