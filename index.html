@@ -1586,6 +1586,87 @@ async function studioGetRefereeHistory(game) {
     sufficient: matches.length >= 6
   };
   }
+    /* V6 STUDIO - PROFILO DISCIPLINARE ARBITRO */
+async function studioGetRefereeYellowProfile(game) {
+  const history = await studioGetRefereeHistory(game);
+
+  if (
+    !history ||
+    history.matches.length < 8 ||
+    Date.parse(game.fixture?.date || "") <= Date.now()
+  ) {
+    return null;
+  }
+
+  const matches = history.matches.slice(0, 12);
+  const results = [];
+
+  // Recupera massimo 4 statistiche contemporaneamente
+  for (let i = 0; i < matches.length; i += 4) {
+    const batch = matches.slice(i, i + 4);
+
+    const values = await Promise.all(
+      batch.map(g => studioYellowCardsByFixture(g))
+    );
+
+    for (const value of values) {
+      if (
+        value &&
+        Number.isInteger(value.home) &&
+        Number.isInteger(value.away) &&
+        Number.isInteger(value.total) &&
+        value.home >= 0 &&
+        value.away >= 0
+      ) {
+        results.push(value);
+      }
+    }
+  }
+
+  // Senza almeno 8 risultati completi,
+  // nessuna conferma dell'arbitro
+  if (results.length < 8) return null;
+
+  const total = results.reduce(
+    (sum, s) => sum + s.total, 0
+  );
+
+  const home = results.reduce(
+    (sum, s) => sum + s.home, 0
+  );
+
+  const away = results.reduce(
+    (sum, s) => sum + s.away, 0
+  );
+
+  const over35 = results.filter(
+    s => s.total >= 4
+  ).length;
+
+  const over45 = results.filter(
+    s => s.total >= 5
+  ).length;
+
+  const n = results.length;
+
+  return {
+    referee: history.referee,
+    sample: n,
+    averageTotal: Number((total / n).toFixed(2)),
+    averageHome: Number((home / n).toFixed(2)),
+    averageAway: Number((away / n).toFixed(2)),
+    over35Hits: over35,
+    over45Hits: over45,
+    over35Percent: Number(
+      (100 * over35 / n).toFixed(1)
+    ),
+    over45Percent: Number(
+      (100 * over45 / n).toFixed(1)
+    ),
+    confirmsOver35: over35 / n >= 0.80,
+    confirmsOver45: over45 / n >= 0.80
+  };
+  }
     /* V6 STUDIO - CAMPIONE CORNER FT DA API */
 async function studioGetCornerApiCandidate(game) {
   const kickoff = Date.parse(game.fixture?.date || "");
