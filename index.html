@@ -1667,6 +1667,91 @@ async function studioGetRefereeYellowProfile(game) {
     confirmsOver45: over45 / n >= 0.80
   };
   }
+    /* V6 STUDIO - TEST ARBITRO EXPERT */
+const studioRefereeBtn = document.createElement("button");
+studioRefereeBtn.type = "button";
+studioRefereeBtn.className = "action";
+studioRefereeBtn.textContent = "⚖️ TEST ARBITRO EXPERT";
+
+studioScanBtn.parentElement.appendChild(studioRefereeBtn);
+
+const studioRefereeReport = document.createElement("p");
+studioRefereeReport.className = "tiny-note";
+
+studioRefereeBtn.insertAdjacentElement(
+  "afterend", studioRefereeReport
+);
+
+studioRefereeBtn.addEventListener("click", async () => {
+  studioRefereeBtn.disabled = true;
+  studioRefereeBtn.textContent = "⏳ Controllo arbitro...";
+
+  try {
+    const games = studioScan.games.filter(g =>
+      Date.parse(g.fixture?.date || "") > Date.now()
+    );
+
+    const game = games.find(g =>
+      studioNormalizeReferee(g.fixture?.referee)
+    );
+
+    if (!game) {
+      studioRefereeReport.textContent =
+        "⚠️ Nessun arbitro assegnato nelle partite " +
+        "caricate. Prova un'altra data.";
+      return;
+    }
+
+    const history = await studioGetRefereeHistory(game);
+
+    if (!history) {
+      studioRefereeReport.textContent =
+        "⚠️ Storico arbitro non disponibile.";
+      return;
+    }
+
+    const matchName =
+      game.teams.home.name + " - " +
+      game.teams.away.name;
+
+    if (history.sampleSize < 8) {
+      studioRefereeReport.textContent =
+        "⚖️ " + matchName +
+        " | Arbitro: " + history.referee +
+        " | Precedenti: " + history.sampleSize +
+        "/8 | Campione insufficiente";
+      return;
+    }
+
+    const profile =
+      await studioGetRefereeYellowProfile(game);
+
+    if (!profile) {
+      studioRefereeReport.textContent =
+        "⚖️ " + history.referee +
+        " | Statistiche gialli insufficienti";
+      return;
+    }
+
+    studioRefereeReport.textContent =
+      "⚖️ " + matchName +
+      " | Arbitro: " + profile.referee +
+      " | Gare: " + profile.sample +
+      " | Media gialli: " + profile.averageTotal +
+      " | Casa: " + profile.averageHome +
+      " | Ospite: " + profile.averageAway +
+      " | Over 3.5: " + profile.over35Percent + "%" +
+      " | Over 4.5: " + profile.over45Percent + "%";
+
+  } catch (error) {
+    studioRefereeReport.textContent =
+      "❌ Test arbitro: " + error.message;
+  } finally {
+    studioRefereeBtn.disabled = false;
+    studioRefereeBtn.textContent =
+      "⚖️ TEST ARBITRO EXPERT";
+  }
+});
     /* V6 STUDIO - CAMPIONE CORNER FT DA API */
 async function studioGetCornerApiCandidate(game) {
   const kickoff = Date.parse(game.fixture?.date || "");
