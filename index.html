@@ -1870,19 +1870,60 @@ studioScanBtn.addEventListener("click", async () => {
             cornerError
           );
         }
-        // V6 STUDIO - TEST CARTELLINI GIALLI FT
+                // V6 STUDIO - CARTELLINI SOLO CON CAMPIONE VALIDO
         try {
           const batchKey =
             studioScan.date + "|" +
             Math.floor(studioScan.index / 6);
 
+          const fixtureId = Number(game.fixture?.id);
+
           const hasPick = studioScan.picks.some(p =>
-            Number(p.game?.fixture?.id) ===
-            Number(game.fixture?.id)
+            Number(p.game?.fixture?.id) === fixtureId
           );
 
+          const kickoff = Date.parse(
+            game.fixture?.date || ""
+          );
+
+          const leagueId = Number(game.league?.id);
+          const season = Number(game.league?.season);
+
+          const countValid = (teamId, side) => {
+            const history = studioScan.cache.get(
+              Number(teamId)
+            );
+
+            if (!Array.isArray(history)) return 0;
+
+            return history.filter(g =>
+              g.fixture?.status?.short === "FT" &&
+              Number(g.league?.id) === leagueId &&
+              Number(g.league?.season) === season &&
+              Number(g.teams?.[side]?.id) === Number(teamId) &&
+              Number.isFinite(Date.parse(
+                g.fixture?.date || ""
+              )) &&
+              Date.parse(g.fixture.date) < kickoff
+            ).length;
+          };
+
+          const homeCount = countValid(
+            game.teams?.home?.id, "home"
+          );
+
+          const awayCount = countValid(
+            game.teams?.away?.id, "away"
+          );
+
+          const sampleReady =
+            homeCount >= 8 && awayCount >= 8;
+
+          // Il tentativo viene utilizzato soltanto
+          // quando il campione è sufficiente
           if (
             !hasPick &&
+            sampleReady &&
             studioScan.cardsApiBatch !== batchKey
           ) {
             studioScan.cardsApiBatch = batchKey;
@@ -1894,12 +1935,13 @@ studioScanBtn.addEventListener("click", async () => {
               studioScan.picks.push(cardPick);
             }
           }
+
         } catch (cardError) {
           console.warn(
             "Scanner Expert Cartellini FT:",
             cardError
           );
-        }
+    }
         studioScan.index++;
       }
     }
