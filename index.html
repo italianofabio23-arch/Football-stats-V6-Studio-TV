@@ -1868,6 +1868,84 @@ studioRefereeBtn.addEventListener("click", async () => {
       "⚖️ TEST ARBITRO EXPERT";
   }
 });
+    /* V6 STUDIO - SCONTRI DIRETTI H2H REALI */
+const studioH2HCache = new Map();
+
+async function studioGetH2HHistory(game) {
+  const homeId = Number(game?.teams?.home?.id);
+  const awayId = Number(game?.teams?.away?.id);
+  const kickoff = Date.parse(
+    game?.fixture?.date || ""
+  );
+
+  if (
+    !Number.isInteger(homeId) || homeId <= 0 ||
+    !Number.isInteger(awayId) || awayId <= 0 ||
+    homeId === awayId ||
+    !Number.isFinite(kickoff) ||
+    kickoff <= Date.now()
+  ) {
+    return null;
+  }
+
+  const key = [
+    Math.min(homeId, awayId),
+    Math.max(homeId, awayId)
+  ].join("-");
+
+  if (!studioH2HCache.has(key)) {
+    const url =
+      "https://football-stats-v3.onrender.com/api/football" +
+      "?path=%2Ffixtures%2Fheadtohead" +
+      "&h2h=" + key +
+      "&last=20";
+
+    studioH2HCache.set(
+      key,
+      studioApiGet(url)
+    );
+  }
+
+  let fixtures;
+
+  try {
+    fixtures = await studioH2HCache.get(key);
+  } catch (error) {
+    studioH2HCache.delete(key);
+    console.warn("Storico H2H non disponibile:", error);
+    return null;
+  }
+
+  // Soltanto risultati conclusi prima della partita
+  const matches = fixtures.filter(g => {
+    const date = Date.parse(
+      g.fixture?.date || ""
+    );
+
+    const teams = [
+      Number(g.teams?.home?.id),
+      Number(g.teams?.away?.id)
+    ].sort((a, b) => a - b);
+
+    return (
+      g.fixture?.status?.short === "FT" &&
+      Number.isFinite(date) &&
+      date < kickoff &&
+      teams[0] === Math.min(homeId, awayId) &&
+      teams[1] === Math.max(homeId, awayId)
+    );
+  })
+  .sort((a, b) =>
+    Date.parse(b.fixture.date) -
+    Date.parse(a.fixture.date)
+  )
+  .slice(0, 10);
+
+  return {
+    matches,
+    sampleSize: matches.length
+  };
+    }
     /* V6 STUDIO - CAMPIONE CORNER FT DA API */
 async function studioGetCornerApiCandidate(game) {
   const kickoff = Date.parse(game.fixture?.date || "");
