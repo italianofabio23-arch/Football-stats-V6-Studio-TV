@@ -2495,7 +2495,7 @@ studioScanBtn.addEventListener("click", async () => {
       cardSamplesReady + "/" + checkedGames.length +
       " | Massimo storico Casa: " + cardMaxHome +
       " | Massimo storico Ospite: " + cardMaxAway +
-      " | Anomalie approvate: " +
+      " | Anomalie rilevate: " +
       picks.filter(p =>
         String(p.market || "").includes("GIALLI FT")
       ).length;
@@ -2533,14 +2533,14 @@ studioScanBtn.addEventListener("click", async () => {
     $("crawlText").textContent =
       "PARTITE CONTROLLATE: " + studioScan.index +
       "/" + studioScan.games.length +
-      " · ANOMALIE APPROVATE: " + picks.length +
+      " ·  ANOMALIE RILEVATE: + picks.length +
       " · ERRORI API: " + studioScan.errors;
 
     $("presenterSpeech").textContent =
       "🎙️ Scanner Expert: controllate " +
       studioScan.index + " partite su " +
       studioScan.games.length + ". " +
-      "Anomalie approvate: " + picks.length + ".";
+      "Anomalie rilevate: " + picks.length + ".";
 
     $("screenPicks").scrollIntoView({
       behavior: "smooth",
