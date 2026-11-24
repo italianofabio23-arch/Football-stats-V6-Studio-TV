@@ -1884,73 +1884,35 @@ async function studioGetH2HHistory(game) {
     homeId === awayId ||
     !Number.isFinite(kickoff) ||
     kickoff <= Date.now()
-  ) {
-    return null;
-  }
+  ) return null;
 
-  const key = [
-    Math.min(homeId, awayId),
-    Math.max(homeId, awayId)
-  ].join("-");
+  const key = homeId + "-" + awayId;
 
+  // Usa il percorso /fixtures già funzionante
   if (!studioH2HCache.has(key)) {
     const url =
       "https://football-stats-v3.onrender.com/api/football" +
-      "?path=%2Ffixtures%2Fheadtohead" +
-      "&h2h=" + key +
-      "&last=20";
+      "?path=%2Ffixtures" +
+      "&team=" + homeId +
+      "&last=99&status=FT";
 
-        studioH2HCache.set(key, (async () => {
-      const response = await fetch(url, {
-        cache: "no-store"
-      });
-
-      if (!response.ok) {
-        throw new Error("HTTP " + response.status);
-      }
-
-      const data = await response.json();
-
-      if (
-        data?.errors &&
-        Object.keys(data.errors).length
-      ) {
-        throw new Error(
-          "Risposta API: " +
-          JSON.stringify(data.errors).slice(0, 250)
-        );
-      }
-      // Mostra il vero errore restituito dal proxy
-      if (data?.error != null) {
-        const detail =
-          typeof data.error === "string"
-            ? data.error
-            : JSON.stringify(data.error);
-
-        throw new Error(
-          "Proxy H2H: " + String(detail).slice(0, 300)
-        );
-      }
-      if (!Array.isArray(data?.response)) {
-        throw new Error(
-          "Formato H2H inatteso | Campi: " +
-          Object.keys(data || {}).join(", ")
-        );
-      }
-
-      return data.response;
-    })());
+    studioH2HCache.set(
+      key,
+      studioApiGet(url)
+    );
   }
 
-  let fixtures;
+  let fixtures = [];
+  let source = "Ultime 99 gare della squadra";
 
   try {
     fixtures = await studioH2HCache.get(key);
-    } catch (error) {
+
+  } catch (error) {
     studioH2HCache.delete(key);
 
     console.warn(
-      "API H2H non disponibile, uso storico squadre:",
+      "H2H: recupero esteso non riuscito",
       error
     );
 
@@ -1965,69 +1927,52 @@ async function studioGetH2HHistory(game) {
       ...(Array.isArray(awayGames) ? awayGames : [])
     ];
 
-    if (!cached.length) {
-      return null;
-    }
+    if (!cached.length) return null;
 
-    // Elimina i duplicati mantenendo gli ID reali
     fixtures = [...new Map(
       cached
-        .filter(g =>
-          Number(g?.fixture?.id) > 0
-        )
-        .map(g => [
-          Number(g.fixture.id), g
-        ])
+        .filter(g => Number(g?.fixture?.id) > 0)
+        .map(g => [Number(g.fixture.id), g])
     ).values()];
-        // Diagnosi: il recupero recente non contiene H2H
-    const foundH2H = fixtures.some(g => {
+
+    source = "Storico recente in memoria";
+  }
+
+  // Usa esclusivamente incontri conclusi
+  // prima della partita da analizzare
+  const matches = fixtures
+    .filter(g => {
+      const date = Date.parse(
+        g?.fixture?.date || ""
+      );
+
       const h = Number(g?.teams?.home?.id);
       const a = Number(g?.teams?.away?.id);
 
-      return (
+      const sameTeams =
         (h === homeId && a === awayId) ||
-        (h === awayId && a === homeId)
-      );
-    });
+        (h === awayId && a === homeId);
 
-    if (!foundH2H) {
-      throw new Error(
-        "API H2H: " +
-        (error?.message || "non disponibile") +
-        " | Nessun precedente nello storico recente " +
-        "delle squadre. H2H non valutabile."
-      );
-    }
-  }
-
-  // Soltanto risultati conclusi prima della partita
-  const matches = fixtures.filter(g => {
-    const date = Date.parse(
-      g.fixture?.date || ""
-    );
-
-    const teams = [
-      Number(g.teams?.home?.id),
-      Number(g.teams?.away?.id)
-    ].sort((a, b) => a - b);
-
-    return (
-      g.fixture?.status?.short === "FT" &&
-      Number.isFinite(date) &&
-      date < kickoff &&
-      teams[0] === Math.min(homeId, awayId) &&
-      teams[1] === Math.max(homeId, awayId)
-    );
-  })
-  .sort((a, b) =>
-    Date.parse(b.fixture.date) -
-    Date.parse(a.fixture.date)
-  )
-  .slice(0, 10);
+      return sameTeams &&
+        g.fixture?.status?.short === "FT" &&
+        Number.isFinite(date) &&
+        date < kickoff &&
+        Number.isInteger(Number(g.goals?.home)) &&
+        Number.isInteger(Number(g.goals?.away)) &&
+        g.goals?.home != null &&
+        g.goals?.away != null;
+    })
+    .sort((a, b) =>
+      Date.parse(b.fixture.date) -
+      Date.parse(a.fixture.date)
+    )
+    .slice(0, 10);
 
   return {
     matches,
-    sampleSize: matches.length
+    sampleSize: matches.length,
+    source,
+    coverageComplete: false
   };
     }
     /* V6 STUDIO - TEST SCONTRI DIRETTI REALI */
