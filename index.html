@@ -439,7 +439,7 @@
       makeChips($("categoryChoices"),CATEGORIES,state.category,(v)=>{state.category=v;state.market="all";renderControls();renderAll();});
       makeChips($("marketChoices"),MARKET_OPTIONS[state.category],state.market,(v)=>{state.market=v;renderControls();renderAll();});
       makeChips($("riskChoices"),Object.entries(RISK_PROFILES).map(([k,v])=>[k,v.text]),state.risk,(v)=>{state.risk=v;renderControls();renderAll();});
-      makeChips($("countChoices"),[[2,"2 partite"],[3,"3 partite"]],state.count,(v)=>{state.count=v;renderControls();renderAll();});
+      makeChips($("countChoices"),[[2,"2 partite"],[3,"3 partite"],[6,"6 partite"]],state.count,(v)=>{state.count=v;renderControls();renderAll();});
       
 $("presenterSelect").value = state.presenter;
 
