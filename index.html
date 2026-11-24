@@ -1268,6 +1268,89 @@ async function studioCornerTotalByFixture(fixtureId) {
 
   return request;
     }
+    /* V6 STUDIO - TEST CORNER PER TEMPO */
+const studioHalfTestBtn =
+  document.createElement("button");
+
+studioHalfTestBtn.type = "button";
+studioHalfTestBtn.className = "action";
+studioHalfTestBtn.textContent =
+  "🧪 TEST CORNER 1T / 2T";
+
+studioScanBtn.insertAdjacentElement(
+  "afterend", studioHalfTestBtn
+);
+
+const studioHalfTestReport =
+  document.createElement("p");
+
+studioHalfTestReport.className = "tiny-note";
+studioHalfTestReport.style.whiteSpace = "pre-line";
+
+studioHalfTestBtn.insertAdjacentElement(
+  "afterend", studioHalfTestReport
+);
+
+studioHalfTestBtn.addEventListener(
+  "click", async () => {
+    const fixtureId =
+      studioCornerStatsCache.keys().next().value;
+
+    if (!fixtureId) {
+      studioHalfTestReport.textContent =
+        "Completa prima lo Scanner Expert.";
+      return;
+    }
+
+    studioHalfTestBtn.disabled = true;
+
+    try {
+      const url =
+        "https://football-stats-v3.onrender.com/api/football" +
+        "?path=%2Ffixtures%2Fstatistics" +
+        "&fixture=" + fixtureId +
+        "&half=true";
+
+      const response = await fetch(url, {
+        cache: "no-store"
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !Array.isArray(data.response)) {
+        throw new Error(
+          JSON.stringify(
+            data.error || data.errors || data
+          ).slice(0, 250)
+        );
+      }
+
+      const details = data.response.map(row => {
+        const corners = Array.isArray(row.statistics)
+          ? row.statistics.filter(s =>
+              /corner/i.test(String(s.type || ""))
+            )
+          : [];
+
+        return (
+          (row.team?.name || "Squadra") +
+          " | Campi: " + Object.keys(row).join(", ") +
+          " | Corner: " + JSON.stringify(corners)
+        );
+      });
+
+      studioHalfTestReport.textContent =
+        "Fixture: " + fixtureId + "\n" +
+        details.join("\n").slice(0, 1500);
+
+    } catch (error) {
+      studioHalfTestReport.textContent =
+        "❌ API Corner 1T/2T: " + error.message;
+    } finally {
+      studioHalfTestBtn.disabled = false;
+    }
+  }
+);
     /* V6 STUDIO - CARTELLINI GIALLI REALI FT */
 const studioYellowCardsCache = new Map();
 
