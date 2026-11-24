@@ -2220,29 +2220,40 @@ function studioGetCornerFtCandidate(game) {
     return null;
   }
 
-  const homeHits = home.filter(item =>
-    Number(item.result) > 7.5
-  ).length;
+    // V6 STUDIO - CORNER TOTALI FT MULTISOGLIA
+  const cornerLines = [10.5, 9.5, 8.5, 7.5];
 
-  const awayHits = away.filter(item =>
-    Number(item.result) > 7.5
-  ).length;
+  for (const line of cornerLines) {
+    const homeHits = home.filter(item =>
+      Number(item.result) > line
+    ).length;
 
-  if (
-    homeHits / home.length < 0.80 ||
-    awayHits / away.length < 0.80
-  ) return null;
+    const awayHits = away.filter(item =>
+      Number(item.result) > line
+    ).length;
 
-  return {
-    game,
-    market: "TOTALE OVER 7.5 CORNER FT",
-    homeLabel: "Casa: Over 7.5 corner totali",
-    awayLabel: "Ospite: Over 7.5 corner totali",
-    homeHits,
-    homeTotal: home.length,
-    awayHits,
-    awayTotal: away.length
-  };
+    const homeRate = homeHits / home.length;
+    const awayRate = awayHits / away.length;
+
+    // Entrambi i campioni devono superare l'80%
+    if (homeRate < 0.80 || awayRate < 0.80) {
+      continue;
+    }
+
+    return {
+      game,
+      market: `TOTALE OVER ${line.toFixed(1)} CORNER FT`,
+      homeLabel: `Casa: Over ${line.toFixed(1)} corner totali`,
+      awayLabel: `Ospite: Over ${line.toFixed(1)} corner totali`,
+      homeHits,
+      homeTotal: home.length,
+      awayHits,
+      awayTotal: away.length
+    };
+  }
+
+  // Nessuna anomalia sufficientemente forte
+  return null;
     }
 studioScanBtn.addEventListener("click", async () => {
   studioScanBtn.disabled = true;
