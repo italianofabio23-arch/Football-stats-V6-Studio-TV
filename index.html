@@ -2622,8 +2622,10 @@ studioScanBtn.addEventListener("click", async () => {
       " | Campioni sufficienti: " +
       cornerSamplesReady +
       " | Corner approvati: " +
-      picks.filter(p =>
-        p.market === "TOTALE OVER 7.5 CORNER FT"
+            picks.filter(p =>
+        /^TOTALE OVER (7\.5|8\.5|9\.5|10\.5) CORNER FT$/.test(
+          String(p.market || "")
+        )
       ).length +
       " | Test API: " +
       (studioScan.cornerApiBatch || "non avviato") +
