@@ -430,7 +430,7 @@
       balanced:{text:"⚖️ Equilibrato",minProb:58,maxProb:100,minConfidence:70},
       bold:{text:"🔥 Alta quota",minProb:45,maxProb:78,minConfidence:65}
     };
-    let state={date:localDate(new Date()),category:"all",market:"all",risk:"balanced"count:6,presenter:"coach",mode:"empty",feeds:[]};
+        let state={date:localDate(new Date()),category:"all",market:"all",risk:"balanced",count:6,presenter:"coach",mode:"empty",feeds:[]};
     function localDate(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");}
     function safeString(value){return String(value??"").replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);}
     function humanDate(date){const d=new Date(date+"T12:00:00");return Number.isNaN(d.getTime())?date:d.toLocaleDateString("it-IT",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});}
