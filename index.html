@@ -2423,17 +2423,22 @@ studioScanBtn.addEventListener("click", async () => {
             let cornerPick =
               studioGetCornerFtCandidate(game);
 
-            // Prova l'API al massimo su una partita
-            // per ogni blocco di 6 incontri
+                        // V6 STUDIO - CORNER FT
+            // Massimo 2 tentativi API ogni 6 partite
             const batchKey =
               studioScan.date + "|" +
               Math.floor(studioScan.index / 6);
 
+            if (studioScan.cornerApiBatch !== batchKey) {
+              studioScan.cornerApiBatch = batchKey;
+              studioScan.cornerApiAttempts = 0;
+            }
+
             if (
               !cornerPick &&
-              studioScan.cornerApiBatch !== batchKey
+              studioScan.cornerApiAttempts < 2
             ) {
-              studioScan.cornerApiBatch = batchKey;
+              studioScan.cornerApiAttempts++;
 
               cornerPick =
                 await studioGetCornerApiCandidate(game);
