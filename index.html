@@ -2140,29 +2140,43 @@ async function studioGetCornerApiCandidate(game) {
     awayTotals.length < 8
   ) return null;
 
-  const homeHits = homeTotals.filter(
-    n => n > 7.5
-  ).length;
+    // V6 STUDIO - CORNER TOTALI FT DA API
+  // Analizza prima le soglie più selettive
+  const cornerLines = [10.5, 9.5, 8.5, 7.5];
 
-  const awayHits = awayTotals.filter(
-    n => n > 7.5
-  ).length;
+  for (const line of cornerLines) {
+    const homeHits = homeTotals.filter(
+      n => n > line
+    ).length;
 
-  if (
-    homeHits / homeTotals.length < 0.80 ||
-    awayHits / awayTotals.length < 0.80
-  ) return null;
+    const awayHits = awayTotals.filter(
+      n => n > line
+    ).length;
 
-  return {
-    game,
-    market: "TOTALE OVER 7.5 CORNER FT",
-    homeLabel: "Casa: Over 7.5 corner totali",
-    awayLabel: "Ospite: Over 7.5 corner totali",
-    homeHits,
-    homeTotal: homeTotals.length,
-    awayHits,
-    awayTotal: awayTotals.length
-  };
+    const homeRate = homeHits / homeTotals.length;
+    const awayRate = awayHits / awayTotals.length;
+
+    if (
+      homeRate < 0.80 ||
+      awayRate < 0.80
+    ) {
+      continue;
+    }
+
+    return {
+      game,
+      market: `TOTALE OVER ${line.toFixed(1)} CORNER FT`,
+      homeLabel: `Casa: Over ${line.toFixed(1)} corner totali`,
+      awayLabel: `Ospite: Over ${line.toFixed(1)} corner totali`,
+      homeHits,
+      homeTotal: homeTotals.length,
+      awayHits,
+      awayTotal: awayTotals.length
+    };
+  }
+
+  // Nessuna soglia supera entrambi i filtri
+  return null;
     }
 /* V6 STUDIO - ANOMALIE CORNER TOTALI FT */
 function studioGetCornerFtCandidate(game) {
